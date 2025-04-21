@@ -11,8 +11,15 @@ import {  Modal,  ModalContent,  ModalHeader,  ModalBody,  ModalFooter} from "@h
 import { useState } from "react";
 import { Input } from "@heroui/input";
 import { FaWandMagicSparkles } from "react-icons/fa6";
-export default function Register() {
+import { redirect } from "next/navigation";
+import { getSession } from "@/lib/auth";
+
+export default async function Register() {
   const [isOpen, setIsOpen] = useState(false);
+  const session = await getSession();
+  if (!session) {
+    redirect("/auth/signin");
+  }
   return (
     <>
       <div className="flex flex-row gap-5 justify-center items-center mb-2">
