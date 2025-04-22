@@ -59,36 +59,36 @@ export default function RegisterForm() {
             return (
               <Card key={schedule.id} className="flex flex-col w-full max-w-[600px]">
                 <CardHeader className="">
-                  <div className="flex flex-col gap-1">
-                  <p className="text-lg font-bold">{schedule.date}</p>
-                  <p className="text-lg font-bold">{schedule.start_time} - {schedule.end_time}</p>
-                </div>
-              </CardHeader>
-              <Divider />
-              <CardBody>
-                <RadioGroup orientation="horizontal" value={aiResult?.option} >
-                  <Radio value="参加">参加</Radio>
-                  <Radio value="途中参加">途中参加</Radio>
-                  <Radio value="途中退出">途中退出</Radio>
-                  <Radio value="不参加">不参加</Radio>
-                </RadioGroup>
-                {aiResult?.reason && (
-                  <p className="text-sm text-gray-500">{aiResult.reason}</p>
-                )}
-              </CardBody>
-            </Card>
-            )
-          })}
+                  <div className="flex flex-row gap-3 items-center justify-between w-full">
+                    <p className="text-lg font-bold">{schedule.date}</p>
+                    <p className="text-sm font-bold">{schedule.start_time} - {schedule.end_time}</p>
+                  </div>
+                </CardHeader>
+                <Divider />
+                <CardBody className="flex flex-col gap-3 w-full">
+                  <RadioGroup orientation="horizontal" value={aiResult?.option} className="flex flex-row gap-5">
+                    <Radio value="参加">参加</Radio>
+                    <Radio value="途中参加">途中参加</Radio>
+                    <Radio value="途中退出">途中退出</Radio>
+                    <Radio value="不参加">不参加</Radio>
+                  </RadioGroup>
+                  {aiResult?.reason && (
+                    <p className="text-sm text-gray-500">{aiResult.reason}</p>
+                  )}
+                </CardBody>
+              </Card>
+              )
+            })}
           <Button color="primary">登録する</Button>
         </Form>
       </div>
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} placement="center">
         <ModalContent>
           <ModalHeader>
-            自動入力
+            google calendar から予定を取得します
           </ModalHeader>
           <ModalBody>
-            <p>検索条件</p>
+            <p>条件</p>
             <Input type="text" placeholder="カレンダーの予定と少しでも被っていたら、不参加とします" onChange={(e) => setSearchCondition(e.target.value)}/>
           </ModalBody>
           <ModalFooter className="w-full">
@@ -101,7 +101,7 @@ export default function RegisterForm() {
               isLoading={isLoading}
               isDisabled={isLoading}
             >
-              {isLoading ? progressMessage : "自動入力"}
+              {isLoading ? progressMessage : "予定を取得して自動入力"}
             </Button>
           </ModalFooter>
         </ModalContent>
