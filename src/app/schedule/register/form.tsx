@@ -18,6 +18,7 @@ export default function RegisterForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [progressMessage, setProgressMessage] = useState("google calendar の予定を確認中...");
+  const [searchCondition, setSearchCondition] = useState("");
   const [result, setResult] = useState<{
     schedule_id: number;
     date: string;
@@ -32,7 +33,7 @@ export default function RegisterForm() {
       for (let i = 0; i < dummy_schedule.length; i += batchSize) {
         const batch = dummy_schedule.slice(i, i + batchSize);
         setProgressMessage(`${batch[batch.length - 1].date} までの日程を確認中`);
-        const result = await checkSchedule(batch);
+        const result = await checkSchedule(batch, searchCondition);
         setResult((prev) => [...prev, ...(result ?? [])]);
       }
       setIsLoading(false);
@@ -88,7 +89,7 @@ export default function RegisterForm() {
           </ModalHeader>
           <ModalBody>
             <p>検索条件</p>
-            <Input type="text" placeholder="カレンダーの予定と少しでも被っていたら、不参加とします" />
+            <Input type="text" placeholder="カレンダーの予定と少しでも被っていたら、不参加とします" onChange={(e) => setSearchCondition(e.target.value)}/>
           </ModalBody>
           <ModalFooter className="w-full">
             <Button 

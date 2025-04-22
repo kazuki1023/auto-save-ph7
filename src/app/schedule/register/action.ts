@@ -36,7 +36,7 @@ export async function getGoogleCalendarSchedule(dateStr: string) {
   return res.data.items;
 }
 
-export async function checkSchedule(dummy_schedule: DummySchedule[]) {
+export async function checkSchedule(dummy_schedule: DummySchedule[], searchCondition: string) {
   const allEvents = [];
   for (const schedule of dummy_schedule) {
     const events = await getGoogleCalendarSchedule(schedule.date);
@@ -167,6 +167,11 @@ ${allEvents.map((event) => `
   ### 開始時間: ${event.start?.dateTime ?? event.start?.date}
   ### 終了時間: ${event.end?.dateTime ?? event.end?.date}
 `).join("\n")}
+
+${searchCondition ? `
+### search condition
+${searchCondition}
+` : ""}
 `
   });
   return checkSchedule.object.schedule;
