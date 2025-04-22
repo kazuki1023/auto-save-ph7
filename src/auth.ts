@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { CustomSession } from "./lib/auth/types";
   
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
@@ -35,7 +36,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     session: async ({ session, token }) => {
-      return session;
+      const CustomSession = {
+        ...session,
+        google: {
+          accessToken: token.accessToken,
+          refreshToken: token.refreshToken,
+        },
+      } as CustomSession;
+      return CustomSession;
     },
     jwt: async ({ token, account }) => {
       if (account?.provider === "google") {
