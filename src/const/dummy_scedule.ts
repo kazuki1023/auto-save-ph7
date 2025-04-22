@@ -29,6 +29,36 @@ export const dummy_schedule: DummySchedule[] = [
     start_time: "19:00",
     end_time: "22:00",
   },
+  {
+    id: 6,
+    date: "2025-05-02",
+    start_time: "19:00",
+    end_time: "22:00",
+  },
+  {
+    id: 7,
+    date: "2025-05-03",
+    start_time: "19:00",
+    end_time: "22:00",
+  },
+  {
+    id: 8,
+    date: "2025-05-04",
+    start_time: "19:00",
+    end_time: "22:00",
+  },
+  {
+    id: 9,
+    date: "2025-05-05",
+    start_time: "19:00",
+    end_time: "22:00",
+  },
+  {
+    id: 10,
+    date: "2025-05-06",
+    start_time: "19:00",
+    end_time: "22:00",
+  },  
 
 ]
 
