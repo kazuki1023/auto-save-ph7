@@ -1,4 +1,4 @@
-import { format, addDays, addMonths, addWeeks } from "date-fns";
+import { format, addDays, addMonths, addWeeks, startOfDay, endOfDay } from "date-fns";
 
 export const formatDate = (date: Date) => {
   return format(date, "yyyy-MM-dd");
@@ -18,4 +18,22 @@ export const _addMonths = (date: Date, months: number) => {
 
 export const getToday = () => {
   return new Date();
+};
+
+export const getDayRangeISO = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return {
+    timeMin: startOfDay(date).toISOString(),
+    timeMax: endOfDay(date).toISOString(),
+  };
+};
+
+export const getTimeMinISO = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return startOfDay(date).toISOString();
+};
+
+export const getTimeMaxISO = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return endOfDay(date).toISOString();
 };

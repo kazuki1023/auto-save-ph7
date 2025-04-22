@@ -3,20 +3,14 @@
 import { getSession } from "@/lib/auth";
 import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
-import { _addMonths as addMonths, _addWeeks as addWeeks, getToday } from "@/lib/date";
-import { dummy_schedule, DummySchedule } from "@/const/dummy_scedule";
+import { getTimeMinISO, getTimeMaxISO } from "@/lib/date";
+import { DummySchedule } from "@/const/dummy_scedule";
 
 import { generateObject } from 'ai'
 import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 
-// memo
-// googleカレンダーの認証をする
-// 予定を取得する
-// 取得した予定をAIに与える。その上でプロンプトを与えて、空いてる日程を返す
-// 返ってきた日程をそのままformに反映する
-
-export async function getGoogleCalendarSchedule() {
+export async function getGoogleCalendarSchedule(dateStr: string) {
   const session = await getSession();
   if (!session?.user) {
     throw new Error("Unauthorized");
@@ -31,8 +25,8 @@ export async function getGoogleCalendarSchedule() {
 
   const res = await calendar.events.list({
     calendarId: "primary",
-    timeMin: getToday().toISOString(),
-    timeMax: addWeeks(getToday(), 2).toISOString(),
+    timeMin: getTimeMinISO(dateStr),
+    timeMax: getTimeMaxISO(dateStr),
     maxResults: 100,
     singleEvents: true,
     orderBy: "startTime",
@@ -43,12 +37,14 @@ export async function getGoogleCalendarSchedule() {
 }
 
 export async function checkSchedule(dummy_schedule: DummySchedule[]) {
-  const googleCalendar = await getGoogleCalendarSchedule();
-  if (!googleCalendar) {
-    return 
+  const allEvents = [];
+  for (const schedule of dummy_schedule) {
+    const events = await getGoogleCalendarSchedule(schedule.date);
+    allEvents.push(...(events ?? []));
   }
+
   const checkSchedule = await generateObject({
-    model: openai("o3-mini"),
+    model: openai("gpt-4o-mini"),
     schema: z.object({
       schedule: z.array(z.object({
         schedule_id: z.number().describe("candidate slotのid"),
@@ -166,7 +162,7 @@ calendar:
 ${JSON.stringify(dummy_schedule)}
 
 --- calendar ---
-${googleCalendar.map((event) => `
+${allEvents.map((event) => `
   ### 予定名: ${event.summary}
   ### 開始時間: ${event.start?.dateTime ?? event.start?.date}
   ### 終了時間: ${event.end?.dateTime ?? event.end?.date}

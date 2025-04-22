@@ -12,6 +12,8 @@ import { FaWandMagicSparkles } from "react-icons/fa6";
 import { dummy_schedule } from "@/const/dummy_scedule";
 import { checkSchedule } from "./action";
 
+const batchSize = 3;
+
 export default function RegisterForm() {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -26,12 +28,13 @@ export default function RegisterForm() {
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
-      const result = await checkSchedule(dummy_schedule);
-      if (result) {
-        setResult(result);
+      for (let i = 0; i < dummy_schedule.length; i += batchSize) {
+        const batch = dummy_schedule.slice(i, i + batchSize);
+        const result = await checkSchedule(batch);
+        setResult((prev) => [...prev, ...(result ?? [])]);
       }
       setIsLoading(false);
-      console.log(result);
+      setIsOpen(false);
     } catch (error) {
       console.error(error);
       setIsLoading(false);
