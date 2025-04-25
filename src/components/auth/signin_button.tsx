@@ -4,7 +4,7 @@ import { signIn } from "next-auth/react";
 import { Button } from "@heroui/button";  
 import { FaGoogle } from "react-icons/fa";
 
-export default function SignInButton() {
+export function SignInButton() {
   return (
     <Button 
       onPress={() => signIn("google")}

@@ -1,3 +1,5 @@
+'use server'
+
 import { auth } from "@/auth"
 import { CustomSession } from "./types";
 export const getSession = async () => {
