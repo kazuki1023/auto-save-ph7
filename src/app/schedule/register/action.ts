@@ -5,9 +5,9 @@ import { OAuth2Client } from "google-auth-library";
 import { google } from "googleapis";
 import { getTimeMinISO, getTimeMaxISO } from "@/lib/date";
 import { DummySchedule } from "@/const/dummy_scedule";
+import { getModel } from "@/lib/ai/model";
 
 import { generateObject } from 'ai'
-import { openai } from '@ai-sdk/openai'
 import { z } from 'zod'
 
 export async function getGoogleCalendarSchedule(dateStr: string) {
@@ -44,7 +44,7 @@ export async function checkSchedule(dummy_schedule: DummySchedule[], searchCondi
   }
 
   const checkSchedule = await generateObject({
-    model: openai("gpt-4o-mini"),
+    model: getModel(),
     schema: z.object({
       schedule: z.array(z.object({
         schedule_id: z.number().describe("candidate slotのid"),
