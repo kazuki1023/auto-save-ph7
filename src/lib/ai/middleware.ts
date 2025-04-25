@@ -45,6 +45,7 @@ const getCachedResult = (key: string | object) => {
   }
 };
 
+// eslint-disable-next-line
 const updateCache = (key: string, value: any) => {
   ensureCacheFile();
   try {

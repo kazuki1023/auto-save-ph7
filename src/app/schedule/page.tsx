@@ -2,7 +2,6 @@
 
 import {
   Listbox,
-  ListboxSection,
   ListboxItem,
 } from "@heroui/listbox";
 import { Link } from "@heroui/link";
@@ -10,7 +9,7 @@ import { Button } from "@heroui/button";
 import { dummy_schedule } from "@/const/dummy_scedule";
 import { SignInButton } from "@/components/auth/signin_button";
 
-export default async function Schedule() {
+export default function Schedule() {
   return (
     <>
       <div className="flex flex-row gap-5 justify-center items-center mb-2">
@@ -20,7 +19,9 @@ export default async function Schedule() {
       <div className="w-full max-w-[400px] px-1 py-2 rounded-small dark:border-default-100">
         <Listbox className="flex flex-col gap-2 mb-2">
           {dummy_schedule.map((schedule) => (
-            <ListboxItem key={schedule.id} className="mb-2">{schedule.date} {schedule.start_time} - {schedule.end_time}</ListboxItem>
+            <ListboxItem key={schedule.id} className="mb-2" textValue={`${schedule.date} ${schedule.start_time} - ${schedule.end_time}`}>
+              {schedule.date} {schedule.start_time} - {schedule.end_time}
+            </ListboxItem>
           ))}
         </Listbox>
       </div>
