@@ -1,5 +1,4 @@
 import "./global.css";
-import { AuthProvider } from "@/components/auth/provider";
 
 export const metadata = {
   title: 'Next.js',
@@ -14,7 +13,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        {children}
       </body>
     </html>
   )
