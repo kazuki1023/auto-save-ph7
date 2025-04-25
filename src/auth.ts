@@ -52,7 +52,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
       return token;
     },
-    signIn: async ({ user }) => {
+    signIn: async () => {
       return true;
     },
   },
