@@ -1,42 +1,45 @@
-'use server'
+'use server';
 
-import { getSession } from "@/lib/auth";
-import { OAuth2Client } from "google-auth-library";
-import { google } from "googleapis";
-import { getTimeMinISO, getTimeMaxISO } from "@/lib/date";
-import { DummySchedule } from "@/const/dummy_scedule";
-import { getModel } from "@/lib/ai/model";
+import { generateObject } from 'ai';
+import { OAuth2Client } from 'google-auth-library';
+import { google } from 'googleapis';
+import { z } from 'zod';
 
-import { generateObject } from 'ai'
-import { z } from 'zod'
+import { DummySchedule } from '@/const/dummy_scedule';
+import { getModel } from '@/lib/ai/model';
+import { getSession } from '@/lib/auth';
+import { getTimeMinISO, getTimeMaxISO } from '@/lib/date';
 
 export async function getGoogleCalendarSchedule(dateStr: string) {
   const session = await getSession();
   if (!session?.user) {
-    throw new Error("Unauthorized");
+    throw new Error('Unauthorized');
   }
   const oauth2Client = new OAuth2Client({
     credentials: {
-      access_token: session.google?.accessToken ?? "",
-    }
+      access_token: session.google?.accessToken ?? '',
+    },
   });
 
-  const calendar = google.calendar({ version: "v3", auth: oauth2Client });
+  const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
   const res = await calendar.events.list({
-    calendarId: "primary",
+    calendarId: 'primary',
     timeMin: getTimeMinISO(dateStr),
     timeMax: getTimeMaxISO(dateStr),
     maxResults: 100,
     singleEvents: true,
-    orderBy: "startTime",
-    eventTypes: ["default"],
+    orderBy: 'startTime',
+    eventTypes: ['default'],
   });
 
   return res.data.items;
 }
 
-export async function checkSchedule(dummy_schedule: DummySchedule[], searchCondition: string) {
+export async function checkSchedule(
+  dummy_schedule: DummySchedule[],
+  searchCondition: string
+) {
   const allEvents = [];
   for (const schedule of dummy_schedule) {
     const events = await getGoogleCalendarSchedule(schedule.date);
@@ -46,14 +49,20 @@ export async function checkSchedule(dummy_schedule: DummySchedule[], searchCondi
   const checkSchedule = await generateObject({
     model: getModel(),
     schema: z.object({
-      schedule: z.array(z.object({
-        schedule_id: z.number().describe("candidate slotのid"),
-        date: z.string().describe("candidate slotの日付"),
-        start_time: z.string().describe("candidate slotの開始時間"),
-        end_time: z.string().describe("candidate slotの終了時間"),
-        option: z.enum(["参加", "途中参加", "途中退出", "不参加"]).describe("候補日程とカレンダーの予定を比較した結果"),
-        reason: z.string().describe("候補日程とカレンダーの予定を比較した結果の理由")
-      })),
+      schedule: z.array(
+        z.object({
+          schedule_id: z.number().describe('candidate slotのid'),
+          date: z.string().describe('candidate slotの日付'),
+          start_time: z.string().describe('candidate slotの開始時間'),
+          end_time: z.string().describe('candidate slotの終了時間'),
+          option: z
+            .enum(['参加', '途中参加', '途中退出', '不参加'])
+            .describe('候補日程とカレンダーの予定を比較した結果'),
+          reason: z
+            .string()
+            .describe('候補日程とカレンダーの予定を比較した結果の理由'),
+        })
+      ),
     }),
     prompt: `You are a scheduling expert.
 
@@ -162,19 +171,25 @@ calendar:
 ${JSON.stringify(dummy_schedule)}
 
 --- calendar ---
-${allEvents.map((event) => `
+${allEvents
+  .map(
+    event => `
   ### 予定名: ${event.summary}
   ### 開始時間: ${event.start?.dateTime ?? event.start?.date}
   ### 終了時間: ${event.end?.dateTime ?? event.end?.date}
-`).join("\n")}
+`
+  )
+  .join('\n')}
 
-${searchCondition ? `
+${
+  searchCondition
+    ? `
 ### search condition
 ${searchCondition}
-` : ""}
 `
+    : ''
+}
+`,
   });
   return checkSchedule.object.schedule;
 }
-
-
