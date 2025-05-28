@@ -1,7 +1,14 @@
-import { format, addDays, addMonths, addWeeks, startOfDay, endOfDay } from "date-fns";
+import {
+  format,
+  addDays,
+  addMonths,
+  addWeeks,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 
 export const formatDate = (date: Date) => {
-  return format(date, "yyyy-MM-dd");
+  return format(date, 'yyyy-MM-dd');
 };
 
 export const _addDays = (date: Date, days: number) => {

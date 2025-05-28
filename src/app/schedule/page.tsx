@@ -1,13 +1,11 @@
-"use client";
+'use client';
 
-import {
-  Listbox,
-  ListboxItem,
-} from "@heroui/listbox";
-import { Link } from "@heroui/link";
-import { Button } from "@heroui/button";
-import { dummy_schedule } from "@/const/dummy_scedule";
-import { SignInButton } from "@/components/auth/signin_button";
+import { Button } from '@heroui/button';
+import { Link } from '@heroui/link';
+import { Listbox, ListboxItem } from '@heroui/listbox';
+
+import { SignInButton } from '@/components/auth/signin_button';
+import { dummy_schedule } from '@/const/dummy_scedule';
 
 export default function Schedule() {
   return (
@@ -18,14 +16,20 @@ export default function Schedule() {
       </div>
       <div className="w-full max-w-[400px] px-1 py-2 rounded-small dark:border-default-100">
         <Listbox className="flex flex-col gap-2 mb-2">
-          {dummy_schedule.map((schedule) => (
-            <ListboxItem key={schedule.id} className="mb-2" textValue={`${schedule.date} ${schedule.start_time} - ${schedule.end_time}`}>
+          {dummy_schedule.map(schedule => (
+            <ListboxItem
+              key={schedule.id}
+              className="mb-2"
+              textValue={`${schedule.date} ${schedule.start_time} - ${schedule.end_time}`}
+            >
               {schedule.date} {schedule.start_time} - {schedule.end_time}
             </ListboxItem>
           ))}
         </Listbox>
       </div>
-      <Button color="primary" as={Link} href="/schedule/register">登録する</Button>
+      <Button color="primary" as={Link} href="/schedule/register">
+        登録する
+      </Button>
     </>
-  )
+  );
 }

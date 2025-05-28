@@ -1,3 +1,7 @@
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+
 import {
   type LanguageModelV1,
   type LanguageModelV1Middleware,
@@ -6,9 +10,6 @@ import {
   simulateReadableStream,
   wrapLanguageModel,
 } from 'ai';
-import 'dotenv/config';
-import fs from 'fs';
-import path from 'path';
 
 const CACHE_FILE = path.join(process.cwd(), '.cache/ai-cache.json');
 
@@ -61,7 +62,7 @@ const cleanPrompt = (prompt: LanguageModelV1Prompt) => {
   return prompt.map(m => {
     if (m.role === 'assistant') {
       return m.content.map(part =>
-        part.type === 'tool-call' ? { ...part, toolCallId: 'cached' } : part,
+        part.type === 'tool-call' ? { ...part, toolCallId: 'cached' } : part
       );
     }
     if (m.role === 'tool') {

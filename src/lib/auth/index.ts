@@ -1,7 +1,9 @@
-'use server'
+'use server';
 
-import { auth } from "@/auth"
-import { CustomSession } from "./types";
+import { auth } from '@/auth';
+
+import { CustomSession } from './types';
+
 export const getSession = async () => {
   const session = await auth();
   if (session) {
@@ -9,5 +11,3 @@ export const getSession = async () => {
   }
   return session;
 };
-
-
