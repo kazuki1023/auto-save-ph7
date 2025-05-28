@@ -2,7 +2,7 @@ import Link from "next/link"
 import {SignInButton} from "@/components/auth/signin_button"
 import {SignOutButton} from "@/components/auth/signout_button"
 import { auth } from "@/auth"
-import { supabase } from "@/utils/supabase/supabaseClient"
+import { supabase } from "@/lib/supabase/supabaseClient"
 
 export default async function Home() {
   const session = await auth()
