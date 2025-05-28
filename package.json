@@ -21,6 +21,7 @@
     "@heroui/modal": "^2.2.14",
     "@heroui/radio": "^2.3.16",
     "@heroui/theme": "^2.4.13",
+    "@vercel/analytics": "^1.5.0",
     "ai": "^4.3.9",
     "date-fns": "^4.1.0",
     "dotenv": "^16.5.0",
