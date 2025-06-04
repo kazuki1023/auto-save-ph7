@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.3.16",
     "@ai-sdk/react": "^1.2.9",
+    "@heroui/badge": "^2.2.12",
     "@heroui/button": "^2.2.17",
     "@heroui/card": "^2.2.16",
     "@heroui/divider": "^2.2.11",
