@@ -19,12 +19,13 @@ export const config = {
 };
 
 export const middleware = async (request: NextRequest) => {
-  request.headers.set('next-url', request.nextUrl.pathname);
-  const session = (await auth()) as CustomSession;
-  if (!session) {
-    return NextResponse.redirect(new URL('/', request.url));
-  }
-  return NextResponse.next({
-    request,
-  });
+  // request.headers.set('next-url', request.nextUrl.pathname);
+  // const session = (await auth()) as CustomSession;
+  // if (!session) {
+  //   return NextResponse.redirect(new URL('/', request.url));
+  // }
+  // return NextResponse.next({
+  //   request,
+  // });
+  return NextResponse.next();
 };
