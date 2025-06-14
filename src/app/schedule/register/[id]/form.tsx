@@ -81,7 +81,7 @@ export default function RegisterForm() {
             }
           > = {};
           result.forEach(r => {
-            newSelections[r.schedule_id] = {
+            newSelections[r.id] = {
               option: r.option,
               reason: r.reason,
             };
@@ -131,19 +131,20 @@ export default function RegisterForm() {
       setIsSubmitting(true);
 
       // 選択されたデータを整形
-      const scheduleData = Object.entries(selections).map(
-        ([scheduleId, selection]) => ({
-          schedule_id: parseInt(scheduleId),
-          option: selection.option,
-          reason: selection.reason,
-        })
-      );
+      const scheduleData = dummy_candidates
+        .filter(schedule => selections[schedule.id]) // 選択されている候補日のみをフィルタリング
+        .map(schedule => ({
+          date: schedule.date,
+          option: selections[schedule.id].option,
+          reason: selections[schedule.id].reason,
+        }));
+      console.log('scheduleData', scheduleData);
 
-      const response = await registerSchedule(
-        scheduleData,
-        respondentName,
-        additionalInfo
-      );
+      const response = await registerSchedule({
+        respondent_name: respondentName,
+        schedule_id: parseInt(id || '0'),
+        responses: scheduleData,
+      });
 
       if (response.success) {
         alert(response.message);
@@ -177,7 +178,6 @@ export default function RegisterForm() {
         <Form className="flex flex-col gap-5 min-w-[450px] justify-center items-center">
           {dummy_candidates.map(schedule => {
             const aiResult = result.find(r => r.id === schedule.id);
-            console.log('aiResult', aiResult);
             const currentSelection = selections[schedule.id];
 
             return (

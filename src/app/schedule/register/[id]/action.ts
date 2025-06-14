@@ -203,27 +203,40 @@ ${searchCondition}
   return checkSchedule.object.schedule;
 }
 
-export async function registerSchedule(
-  scheduleData: {
-    schedule_id: number;
+export async function registerSchedule(data: {
+  respondent_name: string;
+  schedule_id: number;
+  responses: {
+    date: string;
     option: '参加' | '途中参加' | '途中退出' | '不参加';
     reason?: string;
-  }[],
-  respondentName: string,
-  additionalInfo?: string
-) {
+  }[];
+}) {
   const session = await getSession();
   if (!session?.user) {
     throw new Error('Unauthorized');
   }
 
+  // データの検証
+  if (!data.responses.length) {
+    throw new Error('回答が選択されていません');
+  }
+
+  // 日付の順序でソート
+  const sortedResponses = [...data.responses].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // JSONデータの作成
+  const responseData = {
+    respondent_name: data.respondent_name,
+    schedule_id: data.schedule_id,
+    responses: sortedResponses,
+    created_at: new Date().toISOString(),
+  };
+
   // TODO: ここで実際のDBに登録処理を実装
-  console.log('登録するデータ:', {
-    scheduleData,
-    respondentName,
-    additionalInfo,
-    userId: session.user.id,
-  });
+  console.log('登録するデータ:', responseData);
 
   // 仮の成功レスポンス
   return { success: true, message: '日程が正常に登録されました' };
