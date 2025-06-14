@@ -51,7 +51,8 @@ export async function checkSchedule(
     schema: z.object({
       schedule: z.array(
         z.object({
-          schedule_id: z.number().describe('candidate slotのid'),
+          id: z.number().describe('candidate のid'),
+          schedule_id: z.number().describe('スケジュールのid'),
           date: z.string().describe('candidate slotの日付'),
           start_time: z.string().describe('candidate slotの開始時間'),
           end_time: z.string().describe('candidate slotの終了時間'),
@@ -89,24 +90,28 @@ candidate slot:
   [
     {
       id: 1,
+      schedule_id: 1,
       date: "2025-04-23",
       start_time: "10:00",
       end_time: "11:00",
     },
     {
       id: 2,
+      schedule_id: 1,
       date: "2025-04-24",
       start_time: "10:00",
       end_time: "17:00",
     },
     {
       id: 3,
+      schedule_id: 1,
       date: "2025-04-29",
       start_time: "14:00",
       end_time: "17:00",
     },
     {
       id: 4,
+      schedule_id: 1,
       date: "2025-04-30",
       start_time: "14:00",
       end_time: "17:00",
@@ -134,6 +139,7 @@ calendar:
 ### output
   [
     {
+      id: 1,
       schedule_id: 1,
       date: "2025-04-23",
       start_time: "10:00",
@@ -142,7 +148,8 @@ calendar:
       reason: "旅行のため不参加。",
     },
     {
-      schedule_id: 2,
+      id: 2,
+      schedule_id: 1,
       date: "2025-04-24",
       start_time: "10:00",
       end_time: "17:00",
@@ -150,7 +157,8 @@ calendar:
       reason: "輪読会のため不参加。",
     },
     {
-      schedule_id: 3,
+      id: 3,
+      schedule_id: 1,
       date: "2025-04-29",
       start_time: "14:00",
       end_time: "17:00",
@@ -158,7 +166,8 @@ calendar:
       reason: "予定が入っていないので参加。",
     },
     {
-      schedule_id: 4,
+      id: 4,
+      schedule_id: 1,
       date: "2025-04-30",
       start_time: "14:00",
       end_time: "17:00",

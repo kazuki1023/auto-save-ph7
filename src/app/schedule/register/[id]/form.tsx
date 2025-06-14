@@ -37,6 +37,7 @@ export default function RegisterForm() {
   const [searchCondition, setSearchCondition] = useState('');
   const [result, setResult] = useState<
     {
+      id: number;
       schedule_id: number;
       date: string;
       start_time: string;
@@ -175,7 +176,8 @@ export default function RegisterForm() {
       <div>
         <Form className="flex flex-col gap-5 min-w-[450px] justify-center items-center">
           {dummy_candidates.map(schedule => {
-            const aiResult = result.find(r => r.schedule_id === schedule.id);
+            const aiResult = result.find(r => r.id === schedule.id);
+            console.log('aiResult', aiResult);
             const currentSelection = selections[schedule.id];
 
             return (
