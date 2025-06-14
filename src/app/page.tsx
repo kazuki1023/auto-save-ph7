@@ -21,6 +21,7 @@ export default async function Home() {
     <div>
       <h1>auto-saved-chat</h1>
       <Link href="/schedule">デモページ</Link>
+      <Link href="/schedule/create">スケジュール作成</Link>
       {session ? <SignOutButton /> : <SignInButton />}
     </div>
   )
