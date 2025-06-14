@@ -5,10 +5,10 @@ import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { z } from 'zod';
 
-import { DummySchedule } from '@/const/dummy_scedule';
+import { dummy_candidates } from '@/const/dummy_candidate';
 import { getModel } from '@/lib/ai/model';
 import { getSession } from '@/lib/auth';
-import { getTimeMinISO, getTimeMaxISO } from '@/lib/date';
+import { getTimeMaxISO, getTimeMinISO } from '@/lib/date';
 
 export async function getGoogleCalendarSchedule(dateStr: string) {
   const session = await getSession();
@@ -37,11 +37,11 @@ export async function getGoogleCalendarSchedule(dateStr: string) {
 }
 
 export async function checkSchedule(
-  dummy_schedule: DummySchedule[],
+  candidates: typeof dummy_candidates,
   searchCondition: string
 ) {
   const allEvents = [];
-  for (const schedule of dummy_schedule) {
+  for (const schedule of dummy_candidates) {
     const events = await getGoogleCalendarSchedule(schedule.date);
     allEvents.push(...(events ?? []));
   }
@@ -86,7 +86,7 @@ Finally, provide a reason for your choice.
 
 ### input
 candidate slot:
-  [  
+  [
     {
       id: 1,
       date: "2025-04-23",
@@ -168,7 +168,7 @@ calendar:
   ]
 
 --- candidate slot ---
-${JSON.stringify(dummy_schedule)}
+${JSON.stringify(candidates)}
 
 --- calendar ---
 ${allEvents
@@ -192,4 +192,30 @@ ${searchCondition}
 `,
   });
   return checkSchedule.object.schedule;
+}
+
+export async function registerSchedule(
+  scheduleData: {
+    schedule_id: number;
+    option: '参加' | '途中参加' | '途中退出' | '不参加';
+    reason?: string;
+  }[],
+  respondentName: string,
+  additionalInfo?: string
+) {
+  const session = await getSession();
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+
+  // TODO: ここで実際のDBに登録処理を実装
+  console.log('登録するデータ:', {
+    scheduleData,
+    respondentName,
+    additionalInfo,
+    userId: session.user.id,
+  });
+
+  // 仮の成功レスポンス
+  return { success: true, message: '日程が正常に登録されました' };
 }
