@@ -49,15 +49,11 @@ export default function CreatePage() {
     const router = useRouter();
     const [selectedType, setSelectedType] = useState<string>("");
     const [title, setTitle] = useState("");
-    console.log("Selected Type:", selectedType);
-    console.log("Title:", title);
 
     const handleNext = () => {
-        console.log("Selected Type:", selectedType);
-        console.log("Title:", title);
         if (selectedType && title) {
             router.push(
-                `/create/${selectedType}?title=${encodeURIComponent(title)}`
+                `/schedule/create/${selectedType}?title=${encodeURIComponent(title)}`
             );
         }
     };
@@ -114,8 +110,6 @@ export default function CreatePage() {
                                 fullWidth
                                 isPressable
                                 onPress={() => {
-                                    console.log("aaaaaaa");
-                                    console.log("pressed", type.id);
                                     setSelectedType(type.id);
                                 }}
                             >
@@ -169,7 +163,7 @@ export default function CreatePage() {
 
                 <Button
                     onPress={handleNext}
-                    // disabled={!selectedType || !title}
+                    disabled={!selectedType || !title}
                     className="w-full h-12 text-base"
                 >
                     次へ進む
