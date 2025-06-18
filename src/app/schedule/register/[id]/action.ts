@@ -5,10 +5,10 @@ import { OAuth2Client } from 'google-auth-library';
 import { google } from 'googleapis';
 import { z } from 'zod';
 
-import { DummySchedule } from '@/const/dummy_scedule';
+import { dummy_candidates } from '@/const/dummy_candidate';
 import { getModel } from '@/lib/ai/model';
 import { getSession } from '@/lib/auth';
-import { getTimeMinISO, getTimeMaxISO } from '@/lib/date';
+import { getTimeMaxISO, getTimeMinISO } from '@/lib/date';
 
 export async function getGoogleCalendarSchedule(dateStr: string) {
   const session = await getSession();
@@ -37,11 +37,11 @@ export async function getGoogleCalendarSchedule(dateStr: string) {
 }
 
 export async function checkSchedule(
-  dummy_schedule: DummySchedule[],
+  candidates: typeof dummy_candidates,
   searchCondition: string
 ) {
   const allEvents = [];
-  for (const schedule of dummy_schedule) {
+  for (const schedule of dummy_candidates) {
     const events = await getGoogleCalendarSchedule(schedule.date);
     allEvents.push(...(events ?? []));
   }
@@ -51,7 +51,8 @@ export async function checkSchedule(
     schema: z.object({
       schedule: z.array(
         z.object({
-          schedule_id: z.number().describe('candidate slotのid'),
+          id: z.number().describe('candidate のid'),
+          schedule_id: z.number().describe('スケジュールのid'),
           date: z.string().describe('candidate slotの日付'),
           start_time: z.string().describe('candidate slotの開始時間'),
           end_time: z.string().describe('candidate slotの終了時間'),
@@ -86,27 +87,31 @@ Finally, provide a reason for your choice.
 
 ### input
 candidate slot:
-  [  
+  [
     {
       id: 1,
+      schedule_id: 1,
       date: "2025-04-23",
       start_time: "10:00",
       end_time: "11:00",
     },
     {
       id: 2,
+      schedule_id: 1,
       date: "2025-04-24",
       start_time: "10:00",
       end_time: "17:00",
     },
     {
       id: 3,
+      schedule_id: 1,
       date: "2025-04-29",
       start_time: "14:00",
       end_time: "17:00",
     },
     {
       id: 4,
+      schedule_id: 1,
       date: "2025-04-30",
       start_time: "14:00",
       end_time: "17:00",
@@ -134,6 +139,7 @@ calendar:
 ### output
   [
     {
+      id: 1,
       schedule_id: 1,
       date: "2025-04-23",
       start_time: "10:00",
@@ -142,7 +148,8 @@ calendar:
       reason: "旅行のため不参加。",
     },
     {
-      schedule_id: 2,
+      id: 2,
+      schedule_id: 1,
       date: "2025-04-24",
       start_time: "10:00",
       end_time: "17:00",
@@ -150,7 +157,8 @@ calendar:
       reason: "輪読会のため不参加。",
     },
     {
-      schedule_id: 3,
+      id: 3,
+      schedule_id: 1,
       date: "2025-04-29",
       start_time: "14:00",
       end_time: "17:00",
@@ -158,7 +166,8 @@ calendar:
       reason: "予定が入っていないので参加。",
     },
     {
-      schedule_id: 4,
+      id: 4,
+      schedule_id: 1,
       date: "2025-04-30",
       start_time: "14:00",
       end_time: "17:00",
@@ -168,7 +177,7 @@ calendar:
   ]
 
 --- candidate slot ---
-${JSON.stringify(dummy_schedule)}
+${JSON.stringify(candidates)}
 
 --- calendar ---
 ${allEvents
@@ -192,4 +201,43 @@ ${searchCondition}
 `,
   });
   return checkSchedule.object.schedule;
+}
+
+export async function registerSchedule(data: {
+  respondent_name: string;
+  schedule_id: number;
+  responses: {
+    date: string;
+    option: '参加' | '途中参加' | '途中退出' | '不参加';
+    reason?: string;
+  }[];
+}) {
+  const session = await getSession();
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+
+  // データの検証
+  if (!data.responses.length) {
+    throw new Error('回答が選択されていません');
+  }
+
+  // 日付の順序でソート
+  const sortedResponses = [...data.responses].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // JSONデータの作成
+  const responseData = {
+    respondent_name: data.respondent_name,
+    schedule_id: data.schedule_id,
+    responses: sortedResponses,
+    created_at: new Date().toISOString(),
+  };
+
+  // TODO: ここで実際のDBに登録処理を実装
+  console.log('登録するデータ:', responseData);
+
+  // 仮の成功レスポンス
+  return { success: true, message: '日程が正常に登録されました' };
 }
