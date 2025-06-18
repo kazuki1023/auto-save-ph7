@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-import { CustomSession } from '@/lib/auth/types';
-
-import { auth } from './auth';
-
 export const config = {
   matcher: [
     /*
@@ -19,13 +15,13 @@ export const config = {
 };
 
 export const middleware = async (request: NextRequest) => {
-  // request.headers.set('next-url', request.nextUrl.pathname);
-  // const session = (await auth()) as CustomSession;
-  // if (!session) {
-  //   return NextResponse.redirect(new URL('/', request.url));
-  // }
-  // return NextResponse.next({
-  //   request,
-  // });
+  request.headers.set('next-url', request.nextUrl.pathname);
+  const session = (await auth()) as CustomSession;
+  if (!session) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+  return NextResponse.next({
+    request,
+  });
   return NextResponse.next();
 };
