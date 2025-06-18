@@ -1,5 +1,4 @@
 'use client'
-import React from 'react';
 import {
   Heart,
   Star,
@@ -11,6 +10,7 @@ import {
   Plus,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import React from 'react';
 
 interface User {
   name: string;
