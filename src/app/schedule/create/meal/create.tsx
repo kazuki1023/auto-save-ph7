@@ -1,91 +1,94 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Button } from "@heroui/button"
-import { Card } from "@heroui/card"
-import { CiClock1 } from "react-icons/ci"
-import { FaArrowLeft } from "react-icons/fa"
-import { FaCalendarAlt } from "react-icons/fa"
-import { FaBolt } from "react-icons/fa"
-import Link from "next/link"
-import { supabase } from "@/lib/supabase/supabaseClient"
+import { Button } from '@heroui/button';
+import { Card } from '@heroui/card';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { CiClock1 } from 'react-icons/ci';
+import { FaArrowLeft, FaCalendarAlt, FaBolt } from 'react-icons/fa';
+
+import { supabase } from '@/lib/supabase/supabaseClient';
 
 const timeSlots = [
-  { id: "lunch", label: "ランチ", time: "12:00-15:00", icon: "🍽️" },
-  { id: "afternoon", label: "カフェタイム", time: "15:00-17:00", icon: "☕" },
-  { id: "dinner", label: "ディナー", time: "18:00-21:00", icon: "🍻" },
-  { id: "night", label: "夜遅め", time: "21:00-24:00", icon: "🌙" },
-]
+  { id: 'lunch', label: 'ランチ', time: '12:00-15:00', icon: '🍽️' },
+  { id: 'afternoon', label: 'カフェタイム', time: '15:00-17:00', icon: '☕' },
+  { id: 'dinner', label: 'ディナー', time: '18:00-21:00', icon: '🍻' },
+  { id: 'night', label: '夜遅め', time: '21:00-24:00', icon: '🌙' },
+];
 
 const quickDates = [
-  { label: "今日", offset: 0 },
-  { label: "明日", offset: 1 },
-  { label: "明後日", offset: 2 },
-  { label: "今度の土曜", offset: "saturday" },
-  { label: "今度の日曜", offset: "sunday" },
-]
+  { label: '今日', offset: 0 },
+  { label: '明日', offset: 1 },
+  { label: '明後日', offset: 2 },
+  { label: '今度の土曜', offset: 'saturday' },
+  { label: '今度の日曜', offset: 'sunday' },
+];
 
 export default function CreateMealPageComponent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [title, setTitle] = useState("")
-  const [selectedTimes, setSelectedTimes] = useState<string[]>([])
-  const [selectedDates, setSelectedDates] = useState<string[]>([])
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [title, setTitle] = useState('');
+  const [selectedTimes, setSelectedTimes] = useState<string[]>([]);
+  const [selectedDates, setSelectedDates] = useState<string[]>([]);
 
   useEffect(() => {
-    const titleParam = searchParams.get("title")
-    if (titleParam) setTitle(titleParam)
-  }, [searchParams])
+    const titleParam = searchParams.get('title');
+    if (titleParam) setTitle(titleParam);
+  }, [searchParams]);
 
   const getDateFromOffset = (offset: number | string) => {
-    const today = new Date()
-    if (typeof offset === "number") {
-      const date = new Date(today)
-      date.setDate(today.getDate() + offset)
-      return date.toISOString().split("T")[0]
-    } else if (offset === "saturday") {
-      const daysUntilSaturday = (6 - today.getDay() + 7) % 7 || 7
-      const date = new Date(today)
-      date.setDate(today.getDate() + daysUntilSaturday)
-      return date.toISOString().split("T")[0]
-    } else if (offset === "sunday") {
-      const daysUntilSunday = (7 - today.getDay()) % 7 || 7
-      const date = new Date(today)
-      date.setDate(today.getDate() + daysUntilSunday)
-      return date.toISOString().split("T")[0]
+    const today = new Date();
+    if (typeof offset === 'number') {
+      const date = new Date(today);
+      date.setDate(today.getDate() + offset);
+      return date.toISOString().split('T')[0];
+    } else if (offset === 'saturday') {
+      const daysUntilSaturday = (6 - today.getDay() + 7) % 7 || 7;
+      const date = new Date(today);
+      date.setDate(today.getDate() + daysUntilSaturday);
+      return date.toISOString().split('T')[0];
+    } else if (offset === 'sunday') {
+      const daysUntilSunday = (7 - today.getDay()) % 7 || 7;
+      const date = new Date(today);
+      date.setDate(today.getDate() + daysUntilSunday);
+      return date.toISOString().split('T')[0];
     }
-    return ""
-  }
+    return '';
+  };
 
   const toggleTime = (timeId: string) => {
-    setSelectedTimes((prev) =>
-      prev.includes(timeId) ? prev.filter((id) => id !== timeId) : [...prev, timeId]
-    )
-  }
+    setSelectedTimes(prev =>
+      prev.includes(timeId)
+        ? prev.filter(id => id !== timeId)
+        : [...prev, timeId]
+    );
+  };
 
   const toggleDate = (dateStr: string) => {
-    setSelectedDates((prev) =>
-      prev.includes(dateStr) ? prev.filter((d) => d !== dateStr) : [...prev, dateStr]
-    )
-  }
+    setSelectedDates(prev =>
+      prev.includes(dateStr)
+        ? prev.filter(d => d !== dateStr)
+        : [...prev, dateStr]
+    );
+  };
 
   const createPoll = async () => {
     if (selectedTimes.length > 0 && selectedDates.length > 0) {
       const { data, error } = await supabase
         .from('questions')
         .insert({ id: crypto.randomUUID(), title: title })
-        .select()
+        .select();
       if (error) {
-        console.error("Error creating poll:", error)
-        return
+        console.error('Error creating poll:', error);
+        return;
       }
-      console.log("Poll created successfully:", data)
+      console.log('Poll created successfully:', data);
       if (data && data.length > 0) {
-        router.push(`/`)
+        router.push(`/`);
       }
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-100 w-full">
@@ -111,14 +114,18 @@ export default function CreateMealPageComponent() {
                 <CiClock1 className="w-5 h-5" />
                 時間帯を選択
               </div>
-              <div className="text-sm text-gray-500">複数選択OK！みんなの都合に合わせて調整します</div>
+              <div className="text-sm text-gray-500">
+                複数選択OK！みんなの都合に合わせて調整します
+              </div>
             </div>
             <div className="p-4">
               <div className="grid grid-cols-2 gap-3">
-                {timeSlots.map((slot) => (
+                {timeSlots.map(slot => (
                   <Button
                     key={slot.id}
-                    color={selectedTimes.includes(slot.id) ? "primary" : "default"}
+                    color={
+                      selectedTimes.includes(slot.id) ? 'primary' : 'default'
+                    }
                     className="h-16 flex flex-col items-center justify-center"
                     onPress={() => toggleTime(slot.id)}
                   >
@@ -137,32 +144,34 @@ export default function CreateMealPageComponent() {
                 <FaCalendarAlt className="w-5 h-5" />
                 日程を選択
               </div>
-              <div className="text-sm text-gray-500">いつでもOKな日を選んでください</div>
+              <div className="text-sm text-gray-500">
+                いつでもOKな日を選んでください
+              </div>
             </div>
             <div className="p-4">
               <div className="space-y-3">
                 {quickDates.map((dateOption, index) => {
-                  const dateStr = getDateFromOffset(dateOption.offset)
-                  const date = new Date(dateStr)
-                  const isSelected = selectedDates.includes(dateStr)
+                  const dateStr = getDateFromOffset(dateOption.offset);
+                  const date = new Date(dateStr);
+                  const isSelected = selectedDates.includes(dateStr);
 
                   return (
                     <Button
                       key={index}
                       className="w-full h-12 justify-between"
-                      color={isSelected ? "primary" : "default"}
+                      color={isSelected ? 'primary' : 'default'}
                       onPress={() => toggleDate(dateStr)}
                     >
                       <span className="font-medium">{dateOption.label}</span>
                       <span className="text-sm opacity-70">
-                        {date.toLocaleDateString("ja-JP", {
-                          month: "short",
-                          day: "numeric",
-                          weekday: "short",
+                        {date.toLocaleDateString('ja-JP', {
+                          month: 'short',
+                          day: 'numeric',
+                          weekday: 'short',
                         })}
                       </span>
                     </Button>
-                  )
+                  );
                 })}
               </div>
             </div>
@@ -193,5 +202,5 @@ export default function CreateMealPageComponent() {
         </div>
       </div>
     </div>
-  )
+  );
 }
