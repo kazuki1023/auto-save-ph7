@@ -209,11 +209,11 @@ const SummaryItem: React.FC<{ item: SummaryItem; capacity: number }> = ({
   item,
   capacity,
 }) => {
-  const rankColors = {
-    1: 'bg-amber-100 text-amber-600',
-    2: 'bg-slate-200 text-slate-600',
-    3: 'bg-red-100 text-red-600',
-  };
+  const rankColors = [
+    'bg-amber-100 text-amber-600',
+    'bg-slate-200 text-slate-600',
+    'bg-red-100 text-red-600',
+  ];
   const statusColors = {
     適正: 'bg-green-100 text-green-700',
     余裕あり: 'bg-sky-100 text-sky-700',
@@ -223,7 +223,7 @@ const SummaryItem: React.FC<{ item: SummaryItem; capacity: number }> = ({
       <div className="flex justify-between items-start">
         <div className="flex items-start gap-3">
           <span
-            className={`flex items-center justify-center w-7 h-7 rounded-full text-base font-bold ${rankColors[item.rank] || 'bg-slate-200'}`}
+            className={`flex items-center justify-center w-7 h-7 rounded-full text-base font-bold ${rankColors[item.rank - 1] || 'bg-slate-200'}`}
           >
             {item.rank}
           </span>
