@@ -1,6 +1,6 @@
 import CreateCompleteComponent from './complete';
 
-export default async function CreateCompletePage() {
+export default function CreateCompletePage() {
   // 必要に応じて認証チェック
   // const session = await auth();
   // if (!session) {
