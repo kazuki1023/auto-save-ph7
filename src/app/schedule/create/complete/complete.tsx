@@ -4,26 +4,20 @@ import { Button } from '@heroui/button';
 import { Card } from '@heroui/card';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
 import { FaCheck, FaCopy, FaShare } from 'react-icons/fa';
 
 import { getUrl } from '@/lib/env';
+import { useClipboard } from '@/lib/hooks';
 
 export default function CreateCompleteComponent() {
   const searchParams = useSearchParams();
   const scheduleId = searchParams.get('id') as string;
-  const [copied, setCopied] = useState(false);
 
   const shareUrl = `${getUrl()}/schedule/register/${scheduleId}`;
+  const { copied, copyToClipboard } = useClipboard();
 
-  const copyToClipboard = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('コピーに失敗しました:', err);
-    }
+  const handleCopy = () => {
+    copyToClipboard(shareUrl);
   };
 
   return (
@@ -52,7 +46,7 @@ export default function CreateCompleteComponent() {
             </div>
             <Button
               color="primary"
-              onPress={copyToClipboard}
+              onPress={handleCopy}
               className="w-full"
               startContent={<FaCopy className="w-4 h-4" />}
             >
@@ -62,11 +56,11 @@ export default function CreateCompleteComponent() {
 
           <Card className="bg-blue-50 border-blue-200 p-4">
             <h3 className="font-medium text-blue-900 mb-2">次のステップ</h3>
-            <ul className="text-sm text-blue-800 space-y-1">
-              <li>• URLをLINEやメールで共有</li>
-              <li>• 参加者が都合の良い時間を投票</li>
-              <li>• リアルタイムで結果を確認</li>
-            </ul>
+            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+              <li>URLをLINEやメールで共有</li>
+              <li>参加者が都合の良い時間を投票</li>
+              <li>リアルタイムで結果を確認</li>
+            </ol>
           </Card>
         </div>
 
