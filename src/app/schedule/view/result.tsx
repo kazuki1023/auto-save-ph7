@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import {
   Heart,
   Star,
@@ -35,7 +35,6 @@ interface EventItem {
 }
 
 export const Dashboard: React.FC = () => {
-
   const router = useRouter();
 
   const user: User = {
@@ -82,7 +81,8 @@ export const Dashboard: React.FC = () => {
           </div>
           <div>
             <h2 className="text-xl font-bold">
-              {user.name} <span className="text-sm text-gray-500">Lv.{user.level}</span>
+              {user.name}{' '}
+              <span className="text-sm text-gray-500">Lv.{user.level}</span>
             </h2>
             <p className="text-gray-600">{user.description}</p>
           </div>
@@ -96,7 +96,9 @@ export const Dashboard: React.FC = () => {
           </div>
           <div className="flex flex-col items-center">
             <Star className="w-6 h-6 text-yellow-500" />
-            <span className="mt-1 text-lg font-bold">{user.thanksReceived}</span>
+            <span className="mt-1 text-lg font-bold">
+              {user.thanksReceived}
+            </span>
             <span className="text-gray-600">もらった感謝</span>
           </div>
           <div className="flex flex-col items-center">
@@ -133,8 +135,11 @@ export const Dashboard: React.FC = () => {
         </h3>
 
         <div className="space-y-4">
-          {ongoingEvents.map((ev) => (
-            <div key={ev.id} className="bg-white rounded-lg shadow p-4 space-y-3">
+          {ongoingEvents.map(ev => (
+            <div
+              key={ev.id}
+              className="bg-white rounded-lg shadow p-4 space-y-3"
+            >
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-3">
                   {ev.icon}
@@ -143,7 +148,10 @@ export const Dashboard: React.FC = () => {
                     <p className="text-sm text-gray-500">{ev.subtitle}</p>
                   </div>
                 </div>
-                <button className="py-1 px-3 border border-gray-300 text-gray-700 rounded-lg text-sm" onClick={() => router.replace(`/schedule/view/detail`)}>
+                <button
+                  className="py-1 px-3 border border-gray-300 text-gray-700 rounded-lg text-sm"
+                  onClick={() => router.replace(`/schedule/view/detail`)}
+                >
                   {ev.role}
                 </button>
               </div>
