@@ -4,9 +4,9 @@ import { Button } from '@heroui/button';
 import { Card } from '@heroui/card';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { CiClock1 } from 'react-icons/ci';
-import { FaArrowLeft, FaCalendarAlt, FaBolt } from 'react-icons/fa';
+import { FaArrowLeft, FaBolt, FaCalendarAlt } from 'react-icons/fa';
 
 import { supabase } from '@/lib/supabase/supabaseClient';
 
@@ -75,9 +75,10 @@ export default function CreateMealPageComponent() {
 
   const createPoll = async () => {
     if (selectedTimes.length > 0 && selectedDates.length > 0) {
+      const uuid = crypto.randomUUID();
       const { data, error } = await supabase
         .from('questions')
-        .insert({ id: crypto.randomUUID(), title: title })
+        .insert({ id: uuid, title: title })
         .select();
       if (error) {
         console.error('Error creating poll:', error);
@@ -85,7 +86,7 @@ export default function CreateMealPageComponent() {
       }
       console.log('Poll created successfully:', data);
       if (data && data.length > 0) {
-        router.push(`/`);
+        router.push(`/schedule/create/complete?id=${uuid}`);
       }
     }
   };
