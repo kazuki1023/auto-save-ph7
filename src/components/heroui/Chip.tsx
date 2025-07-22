@@ -1,3 +1,5 @@
+'use client';
+
 import { Chip as HerouiChip, ChipProps } from '@heroui/react';
 
 const Chip = ({ children, ...props }: ChipProps) => {

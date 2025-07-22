@@ -1,3 +1,5 @@
+'use client';
+
 import { Snippet as HerouiSnippet, SnippetProps } from '@heroui/react';
 
 const Snippet = ({
