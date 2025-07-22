@@ -18,6 +18,7 @@
     "@heroui/badge": "^2.2.12",
     "@heroui/button": "^2.2.17",
     "@heroui/card": "^2.2.16",
+    "@heroui/chip": "^2.2.19",
     "@heroui/divider": "^2.2.11",
     "@heroui/form": "^2.1.16",
     "@heroui/input": "^2.4.17",
