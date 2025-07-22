@@ -1,13 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import ReactMultiDatePickerDatePicker, {
-  DateObject,
+  DatePickerProps as ReactMultiDatePickerDatePickerProps,
 } from 'react-multi-date-picker';
 
-const DatePicker = () => {
-  const [value, setValue] = useState<DateObject | null>(null);
-  return <ReactMultiDatePickerDatePicker value={value} onChange={setValue} />;
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+interface DatePickerProps extends ReactMultiDatePickerDatePickerProps {}
+
+const DatePicker = (props: DatePickerProps) => {
+  return <ReactMultiDatePickerDatePicker {...props} />;
 };
 
 export default DatePicker;
