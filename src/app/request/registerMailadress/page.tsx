@@ -1,0 +1,7 @@
+// 日調完了をお知らせせするメッセージを受け取るためのメールアドレスを登録できるページ
+
+const RegisterMailadressPage = () => {
+  return <></>;
+};
+
+export default RegisterMailadressPage;
