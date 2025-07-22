@@ -5,9 +5,14 @@ import ReactMultiDatePickerDatePicker, {
   DateObject,
 } from 'react-multi-date-picker';
 
-const DatePicker = () => {
-  const [value, setValue] = useState<DateObject | null>(null);
-  return <ReactMultiDatePickerDatePicker value={value} onChange={setValue} />;
+interface DatePickerProps {
+  value: DateObject | null;
+  onChange: (value: DateObject | null) => void;
+  [key: string]: any; // Allow additional props
+}
+
+const DatePicker: React.FC<DatePickerProps> = ({ value, onChange, ...rest }) => {
+  return <ReactMultiDatePickerDatePicker value={value} onChange={onChange} {...rest} />;
 };
 
 export default DatePicker;
