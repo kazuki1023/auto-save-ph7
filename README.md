@@ -60,3 +60,11 @@ npx auth secret
 ```
 
 `NEXTAUTH_URL`は`http://localhost:{port番号}/api/auth`
+
+## supabaseのデータベースの型定義を更新する
+
+- project_idはsupabaseのプロジェクトのIDを入れてください
+
+```
+npx supabase gen types --lang=typescript --project-id={project_id} > src/lib/supabase/database.types.ts
+```
