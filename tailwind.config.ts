@@ -17,23 +17,6 @@ const config: Config = {
     extend: {
       colors: {
         white: '#ffffff',
-        product: {
-          invoice: {
-            DEFAULT: '#001a88',
-          },
-          docissue: {
-            DEFAULT: '#6aa900',
-          },
-          box: {
-            DEFAULT: '#009bff',
-          },
-          workflow: {
-            DEFAULT: '#00acb0',
-          },
-          card: {
-            DEFAULT: '#006775',
-          },
-        },
         tremor: {
           brand: {
             faint: colors.blue[50],
