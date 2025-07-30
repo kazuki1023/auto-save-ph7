@@ -1,0 +1,149 @@
+---
+description: コンポーネントについて
+globs: src/components/heroui/*.tsx
+alwaysApply: true
+---
+
+# Buttonコンポーネント
+
+- Buttonを作成する際は、必ず@components/heroui/Button.tsxを参照してください
+
+## 1. コンポーネントの定義
+
+```tsx
+const Button = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
+```
+
+**forwardRef**を使用してref（参照）を子コンポーネントに転送可能にしています
+
+- `HTMLButtonElement`: 最終的にレンダリングされるbutton要素の型
+- `ButtonProps`: このコンポーネントが受け取るpropsの型
+- 親コンポーネントからbutton要素に直接アクセスできるようになります
+
+## 2. useButtonフックでの状態管理
+
+```tsx
+const {
+  domRef, // 実際のDOM要素への参照
+  children, // ボタン内のテキストや子要素
+  spinnerSize, // ローディングスピナーのサイズ
+  spinner = <Spinner color="current" size={spinnerSize} />, // スピナーコンポーネント（デフォルト値付き）
+  spinnerPlacement, // スピナーの位置（start/end）
+  startContent, // ボタンの左側のコンテンツ
+  endContent, // ボタンの右側のコンテンツ
+  isLoading, // ローディング状態のフラグ
+  disableRipple, // リップル効果の無効化フラグ
+  getButtonProps, // button要素に適用するpropsを取得
+  getRippleProps, // リップル効果用のpropsを取得
+} = useButton({ ref, ...props });
+```
+
+**useButton**は@heroui/reactのカスタムフックで、ボタンの状態や動作を管理している。
+
+### 2.1 domRef
+
+- 型: `React.RefObject<HTMLButtonElement>`
+- 説明: `<button>` 要素に直接アクセスできる参照。
+- 用途: ボタン DOM の制御（例：フォーカス、サイズ取得、スクロール）などに使える。
+
+### 2.2 children
+
+- 型: `React.ReactNode`
+- 説明: ボタン内のテキストや子要素。
+
+### 2.3 spinnerSize
+
+- 型: `"md" | "sm" | "lg" | undefined`
+- 説明: ローディング中に表示するスピナーのサイズ。
+- 用途: `<Spinner size={spinnerSize} />` に渡される。
+
+### 2.4 spinner
+
+- 型: `string | number | bigint | boolean | Iterable<ReactNode> | Promise<AwaitedReactNode> | JSX.Element | null`
+- デフォルト値: `<Spinner color="current" size={spinnerSize} />`
+- 説明: ローディング中に表示するスピナーのコンポーネント。
+
+### 2.5 spinnerPlacement
+
+- 型: `"start" | "end" `
+- 説明: 説明: スピナーをどこに表示するか（テキストの前か後ろか）。
+
+### 2.6 startContent
+
+- 型: `DetailedReactHTMLElement<HTMLAttributes<HTMLElement>, HTMLElement> | null`
+- 説明: ボタンの前に表示されるコンテンツ（アイコンなど）。
+
+### 2.7 endContent
+
+- 型: `DetailedReactHTMLElement<HTMLAttributes<HTMLElement>, HTMLElement> | null`
+- 説明: ボタンの後ろに表示されるコンテンツ（アイコンなど）。
+
+### 2.8 isLoading
+
+- 型: `boolean`
+- 説明: ローディング中かどうかを示すフラグ。
+
+### 2.9 disableRipple
+
+- 型: `boolean`
+- 説明: リップル効果を無効化するフラグ。
+
+### 2.10 getButtonProps
+
+- 型: `PropGetter`
+- 説明: ボタン要素に適用するpropsを取得する関数。
+  - `<button>` 要素に適用すべき aria 属性やイベントハンドラなどの props を返す
+
+### 2.11 getRippleProps
+
+- 型: `() => RippleProps`
+- 説明: リップル効果に関するpropsを取得する関数。
+  - `ripples`: クリック時の波紋エフェクトの状態
+  - `onClear`: リップル効果をクリアする関数
+
+## 3. リップル効果の設定
+
+- リップル効果は、ボタンをクリックしたときに表示される波紋のような効果です
+
+```tsx
+const { ripples, onClear } = getRippleProps();
+```
+
+- `ripples`: クリック時の波紋エフェクトの状態
+- `onClear`: リップル効果をクリアする関数
+
+## 4. JSXレンダリング
+
+```tsx
+return (
+  <button ref={domRef} {...getButtonProps()}>
+    {startContent}
+    {isLoading && spinnerPlacement === 'start' && spinner}
+    {children}
+    {isLoading && spinnerPlacement === 'end' && spinner}
+    {endContent}
+    {!disableRipple && <Ripple ripples={ripples} onClear={onClear} />}
+  </button>
+);
+```
+
+**レンダリングの順序:**
+
+1. `startContent` - 左側のアイコンやコンテンツ
+2. `spinner` - ローディング中かつ位置が'start'の場合のみ表示
+3. `children` - メインのボタンテキスト
+4. `spinner` - ローディング中かつ位置が'end'の場合のみ表示
+5. `endContent` - 右側のアイコンやコンテンツ
+6. `<Ripple>` - リップル効果が有効な場合のみ表示
+
+## 使用例
+
+```tsx
+<Button isLoading={true} spinnerPlacement="start" startContent={<Icon />}>
+  保存する
+</Button>
+```
+
+# Snippetコンポーネント
+
+- Snippetを作成する際は、必ず@components/heroui/Snippet.tsxを参照してください
