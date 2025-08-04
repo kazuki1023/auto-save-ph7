@@ -248,7 +248,7 @@ const AnswerPage = () => {
       });
 
       if (result) {
-        router.push('/answer/share');
+        router.push(`/answer/share?uuid=${params.uuid}`);
       } else {
         console.error('回答の保存に失敗しました');
       }
