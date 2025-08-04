@@ -29,7 +29,8 @@
     "**/**/*.ts",
     "**/**/*.tsx",
     "**/**/**/*.ts",
-    "src/app/**/**/*.ts"
+    "src/app/**/**/*.ts",
+    "src/app/answer/[uuid]/AnswerButton.tsx"
   ],
   "exclude": ["node_modules"]
 }
