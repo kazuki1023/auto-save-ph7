@@ -1,5 +1,7 @@
-import './global.css';
 import { Analytics } from '@vercel/analytics/next';
+import './global.css';
+
+import { AuthProvider } from '@/components/auth/AuthProvider';
 
 export const metadata = {
   title: 'Next.js',
@@ -14,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
         <Analytics />
       </body>
     </html>

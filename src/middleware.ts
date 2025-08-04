@@ -11,8 +11,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - / (root)
+     * - /request (request pages - 認証不要)
      */
-    '/((?!api|webhook|_next/static|_next/image|favicon.ico|$).*)',
+    '/((?!api|webhook|_next/static|_next/image|favicon.ico|request|$).*)',
   ],
 };
 
