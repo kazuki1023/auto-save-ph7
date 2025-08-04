@@ -89,7 +89,7 @@ const RequestTravelCreatePage = () => {
 
     // バリデーション
     if (newStartDate >= newEndDate) {
-      alert('終了日は開始日より後の日付を選択してください');
+      alert('終了日は開始日以降の日付を選択してください');
       return;
     }
 
