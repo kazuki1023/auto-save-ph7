@@ -4,7 +4,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Card, CardBody, CardHeader } from '@/components/heroui';
+import { Alert, Card, CardBody, CardHeader } from '@/components/heroui';
 import Button from '@/components/heroui/Button';
 import { formatDateRange } from '@/lib/date/formatters';
 import { createAnswer } from '@/reposiroties/answers';
@@ -15,6 +15,8 @@ const AnswerPage = () => {
   const router = useRouter();
   const [requestData, setRequestData] = useState<RequestData | null>(null);
   const [loading, setLoading] = useState(true);
+  // 回答者の名前
+  const [name, setName] = useState<string>('');
   // 各候補の回答状態を管理（index -> 'good' | 'conditional' | 'bad' | null）
   const [candidateAnswers, setCandidateAnswers] = useState<
     Map<number, 'good' | 'conditional' | 'bad'>
@@ -25,6 +27,12 @@ const AnswerPage = () => {
   >(new Map());
   // コメント入力欄の表示状態を管理
   const [showCommentFor, setShowCommentFor] = useState<number | null>(null);
+  // バリデーションエラー状態
+  const [validationErrors, setValidationErrors] = useState<Map<number, string>>(
+    new Map()
+  );
+  // グローバルバリデーションエラー
+  const [globalError, setGlobalError] = useState<string>('');
 
   // リクエストデータを取得
   useEffect(() => {
@@ -57,14 +65,43 @@ const AnswerPage = () => {
     answerType: 'good' | 'conditional' | 'bad'
   ) => {
     const newAnswers = new Map(candidateAnswers);
+    const newErrors = new Map(validationErrors);
+
     if (newAnswers.get(index) === answerType) {
       // 同じボタンを押した場合は選択解除
       newAnswers.delete(index);
+      newErrors.delete(index);
     } else {
       // 新しい回答を設定
       newAnswers.set(index, answerType);
+      newErrors.delete(index); // エラーをクリア
+
+      // 自動スクロール: 次の未回答の候補にスクロール
+      const totalCandidates = requestData?.content_json.candidates?.length || 0;
+      for (
+        let nextIndex = index + 1;
+        nextIndex < totalCandidates;
+        nextIndex++
+      ) {
+        if (!newAnswers.has(nextIndex)) {
+          setTimeout(() => {
+            const nextElement = document.getElementById(
+              `candidate-${nextIndex}`
+            );
+            if (nextElement) {
+              nextElement.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center',
+              });
+            }
+          }, 300);
+          break;
+        }
+      }
     }
+
     setCandidateAnswers(newAnswers);
+    setValidationErrors(newErrors);
   };
 
   // コメントの表示/非表示を切り替え
@@ -75,12 +112,58 @@ const AnswerPage = () => {
   // コメントを設定
   const setCandidateComment = (index: number, comment: string) => {
     const newComments = new Map(candidateComments);
+    const newErrors = new Map(validationErrors);
+
     if (comment.trim() === '') {
       newComments.delete(index);
+      // △でコメントが空の場合はエラー
+      if (candidateAnswers.get(index) === 'conditional') {
+        newErrors.set(index, '△を選択した場合はコメントが必要です');
+      }
     } else {
       newComments.set(index, comment);
+      newErrors.delete(index); // エラーをクリア
     }
+
     setCandidateComments(newComments);
+    setValidationErrors(newErrors);
+  };
+
+  // バリデーション実行
+  const validateAnswers = (): boolean => {
+    const newErrors = new Map<number, string>();
+    const totalCandidates = requestData?.content_json.candidates?.length || 0;
+
+    // 名前の検証
+    if (!name.trim()) {
+      setGlobalError('お名前を入力してください');
+      return false;
+    }
+
+    // すべての候補に回答が必要
+    for (let i = 0; i < totalCandidates; i++) {
+      if (!candidateAnswers.has(i)) {
+        newErrors.set(i, '回答を選択してください');
+      } else if (candidateAnswers.get(i) === 'conditional') {
+        // △の場合はコメント必須
+        if (
+          !candidateComments.has(i) ||
+          candidateComments.get(i)?.trim() === ''
+        ) {
+          newErrors.set(i, '△を選択した場合はコメントが必要です');
+        }
+      }
+    }
+
+    setValidationErrors(newErrors);
+    setGlobalError('');
+
+    if (newErrors.size > 0) {
+      setGlobalError('すべての日程に回答してください');
+      return false;
+    }
+
+    return true;
   };
 
   // 回答済みの候補数を取得
@@ -88,7 +171,25 @@ const AnswerPage = () => {
 
   // ボタンを押したときにリダイレクトする関数
   const handleRedirect = async () => {
-    if (!requestData || candidateAnswers.size === 0) return;
+    if (!requestData) return;
+
+    // バリデーション実行
+    if (!validateAnswers()) {
+      // エラーがある場合は最初のエラー項目にスクロール
+      const firstErrorIndex = Array.from(validationErrors.keys())[0];
+      if (firstErrorIndex !== undefined) {
+        const errorElement = document.getElementById(
+          `candidate-${firstErrorIndex}`
+        );
+        if (errorElement) {
+          errorElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+          });
+        }
+      }
+      return;
+    }
 
     try {
       // 回答をanswer_jsonに格納する形式に変換
@@ -98,18 +199,18 @@ const AnswerPage = () => {
         candidateResponses[index] = answerType;
       });
 
-      // コメントを統合
-      const allComments: string[] = [];
+      // 候補毎のコメントを保持
+      const candidateCommentsObject: Record<number, string> = {};
       candidateComments.forEach((comment, index) => {
-        allComments.push(`候補${index + 1}: ${comment}`);
+        candidateCommentsObject[index] = comment;
       });
-      const combinedComment = allComments.join('\n');
 
       // 回答を作成
       const result = await createAnswer({
         question_id: requestData.id,
         candidate_responses: candidateResponses,
-        comment: combinedComment || undefined,
+        candidate_comments: candidateCommentsObject,
+        name: name.trim(),
       });
 
       if (result) {
@@ -161,6 +262,35 @@ const AnswerPage = () => {
           </CardHeader>
         </Card>
 
+        {/* 名前入力 */}
+        <Card>
+          <CardBody className="p-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-foreground"
+              >
+                お名前 <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                placeholder="回答者のお名前を入力してください"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </CardBody>
+        </Card>
+
+        {/* グローバルエラー表示 */}
+        {globalError && (
+          <Alert color="danger" variant="bordered">
+            {globalError}
+          </Alert>
+        )}
+
         {/* 旅行プランの場合の候補リスト */}
         {requestData.type === 'trip' && requestData.content_json.candidates && (
           <div className="space-y-3">
@@ -168,6 +298,7 @@ const AnswerPage = () => {
               const startDate = new Date(candidate.start);
               const endDate = new Date(candidate.end);
               const currentAnswer = candidateAnswers.get(index);
+              const hasError = validationErrors.has(index);
 
               // 宿泊数を計算
               const nights = Math.ceil(
@@ -179,14 +310,19 @@ const AnswerPage = () => {
               return (
                 <Card
                   key={index}
+                  id={`candidate-${index}`}
                   className={`w-full transition-all duration-200 ${
-                    currentAnswer ? 'bg-gray-50 border-gray-200' : ''
+                    currentAnswer
+                      ? 'bg-gray-100 border-gray-300 shadow-inner'
+                      : hasError
+                        ? 'border-red-300 bg-red-50'
+                        : 'border-gray-200'
                   }`}
                 >
                   <CardBody className="p-4">
                     <div
                       className={`text-center mb-4 ${
-                        currentAnswer ? 'opacity-60' : ''
+                        currentAnswer ? 'opacity-50 contrast-75' : ''
                       }`}
                     >
                       <div className="font-medium text-lg">
@@ -195,7 +331,27 @@ const AnswerPage = () => {
                       <div className="text-sm text-foreground-500">
                         {nights === 0 ? '日帰り' : `${nights}泊${days}日`}
                       </div>
+                      {currentAnswer && (
+                        <div className="mt-2 inline-flex items-center px-2 py-1 bg-white/80 rounded-full text-xs font-medium text-gray-600">
+                          回答済み (
+                          {currentAnswer === 'good'
+                            ? '○'
+                            : currentAnswer === 'conditional'
+                              ? '△'
+                              : '×'}
+                          )
+                        </div>
+                      )}
                     </div>
+
+                    {/* バリデーションエラー表示 */}
+                    {hasError && (
+                      <div className="mb-3">
+                        <Alert color="danger" variant="bordered">
+                          {validationErrors.get(index)}
+                        </Alert>
+                      </div>
+                    )}
 
                     {/* 回答ボタン */}
                     <div className="flex justify-center gap-4 mb-3">
@@ -302,7 +458,11 @@ const AnswerPage = () => {
           onPress={handleRedirect}
           className="bg-[#61C48D] text-white shadow-sm w-full"
           size="lg"
-          disabled={candidateAnswers.size === 0}
+          disabled={
+            candidateAnswers.size === 0 ||
+            candidateAnswers.size <
+              (requestData.content_json.candidates?.length || 0)
+          }
         >
           日程調整候補日を確定する
         </Button>

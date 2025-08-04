@@ -37,7 +37,8 @@ export const getAnswersByRequestId = async (
 export const createAnswer = async (answerData: {
   question_id: string;
   candidate_responses: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
-  comment?: string;
+  candidate_comments?: Record<number, string>; // 候補毎のコメント
+  comment?: string; // 全体のコメント（後方互換性のため残す）
   name?: string;
 }): Promise<Tables<'answers'> | null> => {
   try {
@@ -47,6 +48,7 @@ export const createAnswer = async (answerData: {
         question_id: answerData.question_id,
         answer_json: {
           candidate_responses: answerData.candidate_responses,
+          candidate_comments: answerData.candidate_comments,
           comment: answerData.comment,
         },
         name: answerData.name,
@@ -73,6 +75,7 @@ export const updateAnswer = async (
   answerId: string,
   updateData: {
     candidate_responses?: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
+    candidate_comments?: Record<number, string>; // 候補毎のコメント
     comment?: string;
     name?: string;
   }
@@ -91,6 +94,7 @@ export const updateAnswer = async (
 
     const currentAnswerJson = currentAnswer.data.answer_json as {
       candidate_responses?: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
+      candidate_comments?: Record<number, string>; // 候補毎のコメント
       comment?: string;
     } | null;
 
@@ -99,6 +103,9 @@ export const updateAnswer = async (
       candidate_responses:
         updateData.candidate_responses ??
         (currentAnswerJson?.candidate_responses || {}),
+      candidate_comments:
+        updateData.candidate_comments ??
+        (currentAnswerJson?.candidate_comments || {}),
       comment: updateData.comment ?? currentAnswerJson?.comment,
     };
 
