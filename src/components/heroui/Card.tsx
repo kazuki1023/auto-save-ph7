@@ -31,17 +31,17 @@ const Card = forwardRef<HTMLDivElement, CardProps>((props, ref) => {
   return <HeroUICard ref={ref} {...props} />;
 });
 
-const CardBody = ({ children, ...props }: CardBodyProps) => {
-  return <HeroUICardBody {...props}>{children}</HeroUICardBody>;
-};
+const CardBody = forwardRef<HTMLDivElement, CardBodyProps>(({ children, ...props }, ref) => {
+  return <HeroUICardBody ref={ref} {...props}>{children}</HeroUICardBody>;
+});
 
-const CardHeader = ({ children, ...props }: CardHeaderProps) => {
-  return <HeroUICardHeader {...props}>{children}</HeroUICardHeader>;
-};
+const CardHeader = forwardRef<HTMLDivElement, CardHeaderProps>(({ children, ...props }, ref) => {
+  return <HeroUICardHeader ref={ref} {...props}>{children}</HeroUICardHeader>;
+});
 
-const CardFooter = ({ children, ...props }: CardFooterProps) => {
-  return <HeroUICardFooter {...props}>{children}</HeroUICardFooter>;
-};
+const CardFooter = forwardRef<HTMLDivElement, CardFooterProps>(({ children, ...props }, ref) => {
+  return <HeroUICardFooter ref={ref} {...props}>{children}</HeroUICardFooter>;
+});
 
 Card.displayName = 'Card';
 CardBody.displayName = 'CardBody';
