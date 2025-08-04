@@ -8,7 +8,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-const Runk = () => {
+const Rank = () => {
   const searchParams = useSearchParams();
   const uuid = searchParams.get('uuid');
   const [count, setCount] = useState<number | null>(null);
@@ -42,4 +42,4 @@ const Runk = () => {
   );
 };
 
-export default Runk;
+export default Rank;
