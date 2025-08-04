@@ -55,7 +55,7 @@ const RequestTravelCreatePage = () => {
 
     // バリデーション
     if (newStartDate >= newEndDate) {
-      alert('終了日は開始日より後の日付を選択してください');
+      alert('終了日は開始日以降の日付を選択してください');
       return;
     }
 
@@ -142,7 +142,7 @@ const RequestTravelCreatePage = () => {
 
     // 終了日を計算（宿泊数に応じて）
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + selectedPlan.nights); // 重複チェック（完全に同じ日程の候補のみをチェック）
+    endDate.setDate(startDate.getDate() + selectedPlan.nights);
     // 編集中の候補がある場合、その元の日程は除外して重複チェック
     let candidatesToCheck = dateCandidates;
     if (editingCandidate) {
@@ -202,7 +202,7 @@ const RequestTravelCreatePage = () => {
           })),
           notes: '旅行の日程候補を作成しました',
         },
-        type: 'trip' as const, // 型を明示的に指定
+        type: 'trip' as const,
         updated_at: now,
         created_at: now,
       };
