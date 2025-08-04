@@ -29,7 +29,7 @@
     "**/**/*.ts",
     "**/**/*.tsx",
     "**/**/**/*.ts",
-    "src/app/answer/[uuid]"
+    "src/app/**/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
