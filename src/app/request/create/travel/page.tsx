@@ -3,15 +3,11 @@
 import { useMemo, useState } from 'react';
 
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
+import { TRAVEL_PLANS, type TravelPlan } from '@/const/travel_plans';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
 import './calendar-styles.css';
-
-interface TravelPlan {
-  nights: number;
-  days: number;
-}
 
 interface DateCandidate {
   id: string;
@@ -20,16 +16,6 @@ interface DateCandidate {
   displayText: string;
   formattedRange: string;
 }
-
-const travelPlans: TravelPlan[] = [
-  { nights: 0, days: 1 },
-  { nights: 1, days: 2 },
-  { nights: 2, days: 3 },
-  { nights: 3, days: 4 },
-  { nights: 4, days: 5 },
-  { nights: 5, days: 6 },
-  { nights: 6, days: 7 },
-];
 
 const RequestTravelCreatePage = () => {
   const [step, setStep] = useState<'plan' | 'calendar'>('plan');
@@ -197,7 +183,7 @@ const RequestTravelCreatePage = () => {
     }
 
     const newCandidate: DateCandidate = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       startDate,
       endDate,
       displayText:
@@ -241,10 +227,8 @@ const RequestTravelCreatePage = () => {
         created_at: now,
       };
 
-      console.log('登録データ:', requestData);
-
       // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('requests')
         .insert(requestData)
         .select();
@@ -255,7 +239,6 @@ const RequestTravelCreatePage = () => {
         return;
       }
 
-      console.log('登録成功:', data);
       alert('旅行プランが正常に作成されました！');
 
       // 成功後は初期状態に戻す
@@ -394,7 +377,6 @@ const RequestTravelCreatePage = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-lg mx-auto">
-        {/* max-widthを少し大きく */}
         {step === 'plan' && (
           <Card>
             <CardHeader>
@@ -407,7 +389,7 @@ const RequestTravelCreatePage = () => {
             </CardHeader>
             <CardBody>
               <div className="grid grid-cols-4 gap-3">
-                {travelPlans.map(plan => (
+                {TRAVEL_PLANS.map(plan => (
                   <button
                     key={`${plan.nights}-${plan.days}`}
                     onClick={() => handlePlanSelect(plan)}
