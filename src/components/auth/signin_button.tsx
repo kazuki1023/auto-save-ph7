@@ -3,7 +3,7 @@
 import { Button } from '@heroui/button';
 import { usePathname } from 'next/navigation';
 import { signIn } from 'next-auth/react';
-import { FaGoogle } from 'react-icons/fa';
+import { FcGoogle } from 'react-icons/fc';
 
 export function SignInButton() {
   const pathname = usePathname();
@@ -11,8 +11,9 @@ export function SignInButton() {
     <Button
       onPress={() => signIn('google', { callbackUrl: pathname })}
       color="primary"
-      startContent={<FaGoogle />}
+      startContent={<FcGoogle />}
       size="sm"
+      variant="bordered"
     >
       Sign in
     </Button>
