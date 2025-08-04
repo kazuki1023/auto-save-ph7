@@ -1,11 +1,12 @@
 'use client';
-// 回答画面
+// 回答画面（統一版）
 
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { Alert, Card, CardBody, CardHeader } from '@/components/heroui';
 import Button from '@/components/heroui/Button';
+import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { formatDateRange } from '@/lib/date/formatters';
 import { createAnswer } from '@/reposiroties/answers';
 import { getRequestByUuid, type RequestData } from '@/reposiroties/requests';
@@ -17,18 +18,18 @@ const AnswerPage = () => {
   const [loading, setLoading] = useState(true);
   // 回答者の名前
   const [name, setName] = useState<string>('');
-  // 各候補の回答状態を管理（index -> 'good' | 'conditional' | 'bad' | null）
+  // 各候補の回答状態を管理（candidateId -> 'good' | 'conditional' | 'bad'）
   const [candidateAnswers, setCandidateAnswers] = useState<
-    Map<number, 'good' | 'conditional' | 'bad'>
+    Map<string, 'good' | 'conditional' | 'bad'>
   >(new Map());
   // 各候補のコメント状態を管理
   const [candidateComments, setCandidateComments] = useState<
-    Map<number, string>
+    Map<string, string>
   >(new Map());
   // コメント入力欄の表示状態を管理
-  const [showCommentFor, setShowCommentFor] = useState<number | null>(null);
+  const [showCommentFor, setShowCommentFor] = useState<string | null>(null);
   // バリデーションエラー状態
-  const [validationErrors, setValidationErrors] = useState<Map<number, string>>(
+  const [validationErrors, setValidationErrors] = useState<Map<string, string>>(
     new Map()
   );
   // グローバルバリデーションエラー
@@ -61,32 +62,50 @@ const AnswerPage = () => {
 
   // 候補の回答を設定
   const setCandidateAnswer = (
-    index: number,
+    candidateId: string,
     answerType: 'good' | 'conditional' | 'bad'
   ) => {
     const newAnswers = new Map(candidateAnswers);
     const newErrors = new Map(validationErrors);
 
-    if (newAnswers.get(index) === answerType) {
+    if (newAnswers.get(candidateId) === answerType) {
       // 同じボタンを押した場合は選択解除
-      newAnswers.delete(index);
-      newErrors.delete(index);
+      newAnswers.delete(candidateId);
+      newErrors.delete(candidateId);
     } else {
       // 新しい回答を設定
-      newAnswers.set(index, answerType);
-      newErrors.delete(index); // エラーをクリア
+      newAnswers.set(candidateId, answerType);
+      newErrors.delete(candidateId); // エラーをクリア
 
       // 自動スクロール: 次の未回答の候補にスクロール
-      const totalCandidates = requestData?.content_json.candidates?.length || 0;
+      const candidates = requestData?.content_json.candidates || [];
+      const currentIndex = candidates.findIndex(
+        c =>
+          generateCandidateIdFromObject(
+            {
+              start: c.start,
+              end: c.end,
+            },
+            candidates.indexOf(c)
+          ) === candidateId
+      );
+
       for (
-        let nextIndex = index + 1;
-        nextIndex < totalCandidates;
+        let nextIndex = currentIndex + 1;
+        nextIndex < candidates.length;
         nextIndex++
       ) {
-        if (!newAnswers.has(nextIndex)) {
+        const nextCandidateId = generateCandidateIdFromObject(
+          {
+            start: candidates[nextIndex].start,
+            end: candidates[nextIndex].end,
+          },
+          nextIndex
+        );
+        if (!newAnswers.has(nextCandidateId)) {
           setTimeout(() => {
             const nextElement = document.getElementById(
-              `candidate-${nextIndex}`
+              `candidate-${nextCandidateId}`
             );
             if (nextElement) {
               nextElement.scrollIntoView({
@@ -105,24 +124,24 @@ const AnswerPage = () => {
   };
 
   // コメントの表示/非表示を切り替え
-  const toggleCommentInput = (index: number) => {
-    setShowCommentFor(showCommentFor === index ? null : index);
+  const toggleCommentInput = (candidateId: string) => {
+    setShowCommentFor(showCommentFor === candidateId ? null : candidateId);
   };
 
   // コメントを設定
-  const setCandidateComment = (index: number, comment: string) => {
+  const setCandidateComment = (candidateId: string, comment: string) => {
     const newComments = new Map(candidateComments);
     const newErrors = new Map(validationErrors);
 
     if (comment.trim() === '') {
-      newComments.delete(index);
+      newComments.delete(candidateId);
       // △でコメントが空の場合はエラー
-      if (candidateAnswers.get(index) === 'conditional') {
-        newErrors.set(index, '△を選択した場合はコメントが必要です');
+      if (candidateAnswers.get(candidateId) === 'conditional') {
+        newErrors.set(candidateId, '△を選択した場合はコメントが必要です');
       }
     } else {
-      newComments.set(index, comment);
-      newErrors.delete(index); // エラーをクリア
+      newComments.set(candidateId, comment);
+      newErrors.delete(candidateId); // エラーをクリア
     }
 
     setCandidateComments(newComments);
@@ -131,8 +150,8 @@ const AnswerPage = () => {
 
   // バリデーション実行
   const validateAnswers = (): boolean => {
-    const newErrors = new Map<number, string>();
-    const totalCandidates = requestData?.content_json.candidates?.length || 0;
+    const newErrors = new Map<string, string>();
+    const candidates = requestData?.content_json.candidates || [];
 
     // 名前の検証
     if (!name.trim()) {
@@ -141,16 +160,23 @@ const AnswerPage = () => {
     }
 
     // すべての候補に回答が必要
-    for (let i = 0; i < totalCandidates; i++) {
-      if (!candidateAnswers.has(i)) {
-        newErrors.set(i, '回答を選択してください');
-      } else if (candidateAnswers.get(i) === 'conditional') {
+    for (const candidate of candidates) {
+      const candidateId = generateCandidateIdFromObject(
+        {
+          start: candidate.start,
+          end: candidate.end,
+        },
+        candidates.indexOf(candidate)
+      );
+      if (!candidateAnswers.has(candidateId)) {
+        newErrors.set(candidateId, '回答を選択してください');
+      } else if (candidateAnswers.get(candidateId) === 'conditional') {
         // △の場合はコメント必須
         if (
-          !candidateComments.has(i) ||
-          candidateComments.get(i)?.trim() === ''
+          !candidateComments.has(candidateId) ||
+          candidateComments.get(candidateId)?.trim() === ''
         ) {
-          newErrors.set(i, '△を選択した場合はコメントが必要です');
+          newErrors.set(candidateId, '△を選択した場合はコメントが必要です');
         }
       }
     }
@@ -176,10 +202,10 @@ const AnswerPage = () => {
     // バリデーション実行
     if (!validateAnswers()) {
       // エラーがある場合は最初のエラー項目にスクロール
-      const firstErrorIndex = Array.from(validationErrors.keys())[0];
-      if (firstErrorIndex !== undefined) {
+      const firstErrorCandidateId = Array.from(validationErrors.keys())[0];
+      if (firstErrorCandidateId !== undefined) {
         const errorElement = document.getElementById(
-          `candidate-${firstErrorIndex}`
+          `candidate-${firstErrorCandidateId}`
         );
         if (errorElement) {
           errorElement.scrollIntoView({
@@ -192,24 +218,39 @@ const AnswerPage = () => {
     }
 
     try {
-      // 回答をanswer_jsonに格納する形式に変換
-      const candidateResponses: Record<number, 'good' | 'conditional' | 'bad'> =
-        {};
-      candidateAnswers.forEach((answerType, index) => {
-        candidateResponses[index] = answerType;
-      });
+      // candidates配列を構築
+      const candidates = (requestData.content_json.candidates || []).map(
+        (candidate, index) => {
+          const candidateId = generateCandidateIdFromObject(
+            {
+              start: candidate.start,
+              end: candidate.end,
+            },
+            index
+          );
 
-      // 候補毎のコメントを保持
-      const candidateCommentsObject: Record<number, string> = {};
-      candidateComments.forEach((comment, index) => {
-        candidateCommentsObject[index] = comment;
-      });
+          const response = candidateAnswers.get(candidateId);
+          const status: 'accepted' | 'pending' | 'rejected' =
+            response === 'good'
+              ? 'accepted'
+              : response === 'conditional'
+                ? 'pending'
+                : 'rejected';
+          const note = candidateComments.get(candidateId) || '';
 
-      // 回答を作成
+          return {
+            start: candidate.start,
+            end: candidate.end,
+            status,
+            note,
+          };
+        }
+      );
+
+      // 回答を作成（新しいcandidates配列ベース版を使用）
       const result = await createAnswer({
         question_id: requestData.id,
-        candidate_responses: candidateResponses,
-        candidate_comments: candidateCommentsObject,
+        candidates,
         name: name.trim(),
       });
 
@@ -297,8 +338,15 @@ const AnswerPage = () => {
             {requestData.content_json.candidates.map((candidate, index) => {
               const startDate = new Date(candidate.start);
               const endDate = new Date(candidate.end);
-              const currentAnswer = candidateAnswers.get(index);
-              const hasError = validationErrors.has(index);
+              const candidateId = generateCandidateIdFromObject(
+                {
+                  start: candidate.start,
+                  end: candidate.end,
+                },
+                index
+              );
+              const currentAnswer = candidateAnswers.get(candidateId);
+              const hasError = validationErrors.has(candidateId);
 
               // 宿泊数を計算
               const nights = Math.ceil(
@@ -309,8 +357,8 @@ const AnswerPage = () => {
 
               return (
                 <Card
-                  key={index}
-                  id={`candidate-${index}`}
+                  key={candidateId}
+                  id={`candidate-${candidateId}`}
                   className={`w-full transition-all duration-200 ${
                     currentAnswer
                       ? 'bg-gray-100 border-gray-300 shadow-inner'
@@ -331,6 +379,12 @@ const AnswerPage = () => {
                       <div className="text-sm text-foreground-500">
                         {nights === 0 ? '日帰り' : `${nights}泊${days}日`}
                       </div>
+                      {/* デバッグ用：候補ID表示 */}
+                      {process.env.NODE_ENV === 'development' && (
+                        <div className="text-xs text-gray-400 mt-1">
+                          ID: {candidateId}
+                        </div>
+                      )}
                       {currentAnswer && (
                         <div className="mt-2 inline-flex items-center px-2 py-1 bg-white/80 rounded-full text-xs font-medium text-gray-600">
                           回答済み (
@@ -348,7 +402,7 @@ const AnswerPage = () => {
                     {hasError && (
                       <div className="mb-3">
                         <Alert color="danger" variant="bordered">
-                          {validationErrors.get(index)}
+                          {validationErrors.get(candidateId)}
                         </Alert>
                       </div>
                     )}
@@ -356,7 +410,7 @@ const AnswerPage = () => {
                     {/* 回答ボタン */}
                     <div className="flex justify-center gap-4 mb-3">
                       <button
-                        onClick={() => setCandidateAnswer(index, 'good')}
+                        onClick={() => setCandidateAnswer(candidateId, 'good')}
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${
                           currentAnswer === 'good'
                             ? 'bg-green-500 border-green-500 text-white'
@@ -373,7 +427,9 @@ const AnswerPage = () => {
                       </button>
 
                       <button
-                        onClick={() => setCandidateAnswer(index, 'conditional')}
+                        onClick={() =>
+                          setCandidateAnswer(candidateId, 'conditional')
+                        }
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${
                           currentAnswer === 'conditional'
                             ? 'bg-yellow-500 border-yellow-500 text-white'
@@ -390,7 +446,7 @@ const AnswerPage = () => {
                       </button>
 
                       <button
-                        onClick={() => setCandidateAnswer(index, 'bad')}
+                        onClick={() => setCandidateAnswer(candidateId, 'bad')}
                         className={`w-12 h-12 rounded-full border-2 flex items-center justify-center transition-colors ${
                           currentAnswer === 'bad'
                             ? 'bg-red-500 border-red-500 text-white'
@@ -414,19 +470,19 @@ const AnswerPage = () => {
                     {/* コメント追加ボタンとアコーディオン */}
                     <div className="text-center">
                       <button
-                        onClick={() => toggleCommentInput(index)}
+                        onClick={() => toggleCommentInput(candidateId)}
                         className="text-sm text-blue-600 hover:text-blue-800 mb-2"
                       >
                         コメント追加
                       </button>
 
                       {/* コメント入力欄（アコーディオン） */}
-                      {showCommentFor === index && (
+                      {showCommentFor === candidateId && (
                         <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                           <textarea
-                            value={candidateComments.get(index) || ''}
+                            value={candidateComments.get(candidateId) || ''}
                             onChange={e =>
-                              setCandidateComment(index, e.target.value)
+                              setCandidateComment(candidateId, e.target.value)
                             }
                             placeholder="この候補についてコメントがあれば入力してください"
                             className="w-full p-2 border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -1,3 +1,4 @@
+import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { Tables } from '@/lib/supabase/database.types';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
@@ -36,9 +37,12 @@ export const getAnswersByRequestId = async (
  */
 export const createAnswer = async (answerData: {
   question_id: string;
-  candidate_responses: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
-  candidate_comments?: Record<number, string>; // 候補毎のコメント
-  comment?: string; // 全体のコメント（後方互換性のため残す）
+  candidates: Array<{
+    start: string;
+    end: string;
+    status: 'accepted' | 'pending' | 'rejected';
+    note: string;
+  }>;
   name?: string;
 }): Promise<Tables<'answers'> | null> => {
   try {
@@ -47,9 +51,7 @@ export const createAnswer = async (answerData: {
       .insert({
         question_id: answerData.question_id,
         answer_json: {
-          candidate_responses: answerData.candidate_responses,
-          candidate_comments: answerData.candidate_comments,
-          comment: answerData.comment,
+          candidates: answerData.candidates,
         },
         name: answerData.name,
       })
@@ -69,13 +71,68 @@ export const createAnswer = async (answerData: {
 };
 
 /**
+ * 候補IDベースから新しいcandidates配列ベースに変換して作成する
+ */
+export const createAnswerWithCandidateIdsMigration = async (answerData: {
+  question_id: string;
+  candidate_responses: Record<string, 'good' | 'conditional' | 'bad'>; // candidateId -> answer
+  candidate_comments?: Record<string, string>; // candidateId -> comment
+  requestCandidates: { start: string; end: string }[]; // 元の候補リスト
+  comment?: string;
+  name?: string;
+}): Promise<Tables<'answers'> | null> => {
+  try {
+    // candidates配列を構築
+    const candidates = answerData.requestCandidates.map((candidate, index) => {
+      const candidateId = generateCandidateIdFromObject(
+        {
+          start: candidate.start,
+          end: candidate.end,
+        },
+        index
+      );
+
+      const response = answerData.candidate_responses[candidateId];
+      const status: 'accepted' | 'pending' | 'rejected' =
+        response === 'good'
+          ? 'accepted'
+          : response === 'conditional'
+            ? 'pending'
+            : 'rejected';
+      const note = answerData.candidate_comments?.[candidateId] || '';
+
+      return {
+        start: candidate.start,
+        end: candidate.end,
+        status,
+        note,
+      };
+    });
+
+    // 新しいcandidates配列ベースの関数を使用
+    return await createAnswer({
+      question_id: answerData.question_id,
+      candidates,
+      name: answerData.name,
+    });
+  } catch (err) {
+    console.error('回答作成（候補ID移行版）エラー:', err);
+    return null;
+  }
+};
+
+/**
  * 回答を更新する
  */
 export const updateAnswer = async (
   answerId: string,
   updateData: {
-    candidate_responses?: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
-    candidate_comments?: Record<number, string>; // 候補毎のコメント
+    candidates?: Array<{
+      start: string;
+      end: string;
+      status: 'accepted' | 'pending' | 'rejected';
+      note: string;
+    }>;
     comment?: string;
     name?: string;
   }
@@ -93,19 +150,19 @@ export const updateAnswer = async (
     }
 
     const currentAnswerJson = currentAnswer.data.answer_json as {
-      candidate_responses?: Record<number, 'good' | 'conditional' | 'bad'>; // good=○, conditional=△, bad=×
-      candidate_comments?: Record<number, string>; // 候補毎のコメント
+      candidates?: Array<{
+        start: string;
+        end: string;
+        status: 'accepted' | 'pending' | 'rejected';
+        note: string;
+      }>;
       comment?: string;
     } | null;
 
     const newAnswerJson = {
       ...currentAnswerJson,
-      candidate_responses:
-        updateData.candidate_responses ??
-        (currentAnswerJson?.candidate_responses || {}),
-      candidate_comments:
-        updateData.candidate_comments ??
-        (currentAnswerJson?.candidate_comments || {}),
+      candidates:
+        updateData.candidates ?? (currentAnswerJson?.candidates || []),
       comment: updateData.comment ?? currentAnswerJson?.comment,
     };
 
