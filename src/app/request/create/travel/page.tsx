@@ -216,7 +216,6 @@ const RequestTravelCreatePage = () => {
         .insert(requestData)
         .select('id');
       console.log(data);
-
       if (error) {
         console.error('登録エラー:', error);
         alert('登録に失敗しました。もう一度お試しください。');
