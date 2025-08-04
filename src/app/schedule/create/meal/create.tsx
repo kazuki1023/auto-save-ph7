@@ -76,7 +76,7 @@ export default function CreateMealPageComponent() {
   const createPoll = async () => {
     if (selectedTimes.length > 0 && selectedDates.length > 0) {
       const { data, error } = await supabase
-        .from('questions')
+        .from('requests')
         .insert({
           id: crypto.randomUUID(),
           title: title,
