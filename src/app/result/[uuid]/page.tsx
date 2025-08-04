@@ -227,7 +227,7 @@ const ResultPage = () => {
               0 && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-4">
                 <h3 className="text-lg font-medium text-green-800 mb-2">
-                  🏆 合意可能性の高い候補 TOP3
+                  🏆 候補 TOP3
                 </h3>
                 <div className="text-sm text-green-700">
                   ○の数が多い順に表示しています
