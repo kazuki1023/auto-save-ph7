@@ -1,22 +1,34 @@
 'use client';
 // 回答画面（統一版）- UIコンポーネント
 
+import {
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from '@heroui/modal';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { FaWandMagicSparkles } from 'react-icons/fa6';
 
+import { SignInButton } from '@/components/auth/signin_button';
 import { Alert, Button, Card, CardBody, CardHeader } from '@/components/heroui';
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { createAnswer } from '@/reposiroties/answers';
 
+import { checkAnswerSchedule } from './action';
 import TripAnswerForm from './components/TripAnswerForm';
 
 import type { RequestData } from '@/reposiroties/requests';
+import type { Session } from 'next-auth';
 
 interface AnswerProps {
   requestData: RequestData;
+  session: Session | null;
 }
 
-const Answer = ({ requestData }: AnswerProps) => {
+const Answer = ({ requestData, session }: AnswerProps) => {
   const router = useRouter();
   // 回答者の名前
   const [name, setName] = useState<string>('');
@@ -34,6 +46,12 @@ const Answer = ({ requestData }: AnswerProps) => {
   );
   // グローバルバリデーションエラー
   const [globalError, setGlobalError] = useState<string>('');
+  // 自動入力機能用の状態
+  const [isAutoInputOpen, setIsAutoInputOpen] = useState(false);
+  const [isAutoInputLoading, setIsAutoInputLoading] = useState(false);
+  const [progressMessage, setProgressMessage] = useState(
+    'google calendar の予定を確認中...'
+  );
 
   // 候補の回答を設定
   const setCandidateAnswer = (
@@ -165,6 +183,67 @@ const Answer = ({ requestData }: AnswerProps) => {
   // 回答済みの候補数を取得
   const getAnsweredCount = () => candidateAnswers.size;
 
+  // 自動入力処理
+  const handleAutoInput = async () => {
+    if (!requestData?.content_json.candidates) return;
+
+    try {
+      setIsAutoInputLoading(true);
+      setProgressMessage('google calendar の予定を確認中...');
+
+      // 候補データを準備
+      const candidates = requestData.content_json.candidates.map(
+        (candidate, index) => ({
+          start: candidate.start,
+          end: candidate.end,
+          index,
+        })
+      );
+
+      // バッチ処理（一度に全て処理）
+      const result = await checkAnswerSchedule(candidates);
+
+      if (result) {
+        // 結果を既存の状態に反映
+        const newAnswers = new Map(candidateAnswers);
+        const newComments = new Map(candidateComments);
+        const newErrors = new Map(validationErrors);
+
+        result.forEach(r => {
+          const candidateId = generateCandidateIdFromObject(
+            {
+              start: r.start,
+              end: r.end,
+            },
+            r.index
+          );
+
+          // 回答を設定
+          newAnswers.set(candidateId, r.response);
+
+          // コメントを設定（conditionalの場合）
+          if (r.response === 'conditional' && r.comment) {
+            newComments.set(candidateId, r.comment);
+          }
+
+          // エラーをクリア
+          newErrors.delete(candidateId);
+        });
+
+        setCandidateAnswers(newAnswers);
+        setCandidateComments(newComments);
+        setValidationErrors(newErrors);
+      }
+
+      setIsAutoInputLoading(false);
+      setIsAutoInputOpen(false);
+    } catch (error) {
+      console.error('自動入力エラー:', error);
+      setIsAutoInputLoading(false);
+      setIsAutoInputOpen(false);
+    }
+  };
+
   // ボタンを押したときにリダイレクトする関数
   const handleRedirect = async () => {
     if (!requestData) return;
@@ -240,12 +319,22 @@ const Answer = ({ requestData }: AnswerProps) => {
         {/* ヘッダー */}
         <Card>
           <CardHeader>
-            <h1 className="text-xl font-bold text-center w-full">
-              日程を選択してください
-            </h1>
-            <div className="text-center text-sm text-foreground-500 w-full">
-              {getAnsweredCount()}/
-              {requestData.content_json.candidates?.length || 0}
+            <div className="flex flex-col w-full space-y-3">
+              <div className="flex justify-between items-center">
+                <h1 className="text-xl font-bold">日程を選択してください</h1>
+                <Button
+                  color="primary"
+                  size="sm"
+                  startContent={<FaWandMagicSparkles />}
+                  onPress={() => setIsAutoInputOpen(true)}
+                >
+                  自動入力
+                </Button>
+              </div>
+              <div className="text-center text-sm text-foreground-500">
+                {getAnsweredCount()}/
+                {requestData.content_json.candidates?.length || 0}
+              </div>
             </div>
           </CardHeader>
         </Card>
@@ -306,6 +395,50 @@ const Answer = ({ requestData }: AnswerProps) => {
           日程調整候補日を確定する
         </Button>
       </div>
+
+      {/* 自動入力モーダル */}
+      <Modal
+        isOpen={isAutoInputOpen}
+        onClose={() => setIsAutoInputOpen(false)}
+        placement="center"
+      >
+        <ModalContent>
+          <ModalHeader>google calendar から予定を取得します</ModalHeader>
+          <ModalBody>
+            {!session?.user ? (
+              <>
+                <p>Google連携が必要な機能です</p>
+                <p>こちらからGoogle連携を許可してください</p>
+                <SignInButton />
+              </>
+            ) : (
+              <ol className="list-decimal list-inside text-sm flex flex-col gap-2">
+                <li>Google Calendar の予定を取得する</li>
+                <li>
+                  取得した予定と日程調整候補日が被っていない場合は、参加とします
+                </li>
+                <li>
+                  取得した予定と日程調整候補日が一部被っている場合は、条件付き参加とします
+                </li>
+                <li>
+                  取得した予定と日程調整候補日が完全に被っている場合は、参加不可とします
+                </li>
+              </ol>
+            )}
+          </ModalBody>
+          <ModalFooter className="w-full">
+            <Button
+              color="primary"
+              className="w-full"
+              onPress={handleAutoInput}
+              isLoading={isAutoInputLoading}
+              isDisabled={isAutoInputLoading || !session?.user}
+            >
+              {isAutoInputLoading ? progressMessage : '予定を取得して自動入力'}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

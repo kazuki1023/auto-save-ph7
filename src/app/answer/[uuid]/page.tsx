@@ -1,5 +1,6 @@
 // 回答画面
 
+import { auth } from '@/auth';
 import { getRequestByUuid } from '@/reposiroties/requests';
 
 import Answer from './answer';
@@ -9,6 +10,7 @@ interface AnswerPageProps {
 }
 
 const AnswerPage = async ({ params }: AnswerPageProps) => {
+  const session = await auth();
   try {
     const requestData = await getRequestByUuid(params.uuid);
 
@@ -24,7 +26,7 @@ const AnswerPage = async ({ params }: AnswerPageProps) => {
       );
     }
 
-    return <Answer requestData={requestData} />;
+    return <Answer requestData={requestData} session={session} />;
   } catch (err) {
     console.error('予期しないエラー:', err);
     return (
