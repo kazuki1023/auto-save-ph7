@@ -236,7 +236,7 @@ const RequestTravelCreatePage = () => {
           })),
           notes: '旅行の日程候補を作成しました',
         },
-        type: 'trip' as const, // 型を明示的に指定
+        type: 'trip' as const,
         updated_at: now,
         created_at: now,
       };
