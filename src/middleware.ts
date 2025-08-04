@@ -14,7 +14,7 @@ export const config = {
      * - /request (request pages - 認証不要)
      * - /answer (answer pages - 認証不要)
      */
-    '/((?!api|webhook|_next/static|_next/image|favicon.ico|request|answer|$).*)',
+    '/((?!api|webhook|_next/static|_next/image|favicon.ico|request|answer|result|$).*)',
   ],
 };
 
