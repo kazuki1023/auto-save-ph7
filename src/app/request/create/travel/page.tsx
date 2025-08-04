@@ -4,10 +4,14 @@ import { useMemo, useState } from 'react';
 
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
 import { TRAVEL_PLANS, type TravelPlan } from '@/const/travel_plans';
+import {
+  formatDate,
+  formatDateForInput,
+  formatDateRange,
+  parseLocalDate,
+} from '@/lib/date/formatters';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
 import { supabase } from '@/lib/supabase/supabaseClient';
-
-import './calendar-styles.css';
 
 interface DateCandidate {
   id: string;
@@ -29,26 +33,6 @@ const RequestTravelCreatePage = () => {
     endDate: '',
   });
 
-  // 日付フォーマット関数
-  const formatDate = (date: Date): string => {
-    return `${date.getMonth() + 1}月${date.getDate()}日`;
-  };
-
-  const formatDateRange = (startDate: Date, endDate: Date): string => {
-    if (startDate.getTime() === endDate.getTime()) {
-      return formatDate(startDate);
-    }
-    return `${formatDate(startDate)} 〜 ${formatDate(endDate)}`;
-  };
-
-  // 日付をYYYY-MM-DD形式にフォーマット（input[type="date"]用）
-  const formatDateForInput = (date: Date): string => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   // 編集モードを開始
   const handleEditStart = (candidate: DateCandidate) => {
     const newEditForm = {
@@ -66,12 +50,8 @@ const RequestTravelCreatePage = () => {
     if (!editingCandidate || !editForm.startDate || !editForm.endDate) return;
 
     // YYYY-MM-DD形式の文字列をローカル時間のDateに変換
-    const [startYear, startMonth, startDay] = editForm.startDate
-      .split('-')
-      .map(Number);
-    const [endYear, endMonth, endDay] = editForm.endDate.split('-').map(Number);
-    const newStartDate = new Date(startYear, startMonth - 1, startDay);
-    const newEndDate = new Date(endYear, endMonth - 1, endDay);
+    const newStartDate = parseLocalDate(editForm.startDate);
+    const newEndDate = parseLocalDate(editForm.endDate);
 
     // バリデーション
     if (newStartDate >= newEndDate) {
