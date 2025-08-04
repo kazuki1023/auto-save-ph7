@@ -43,18 +43,6 @@ const RequestTravelCreatePage = () => {
     endDate: '',
   });
 
-  // 選択済み日程の出発日一覧を計算（重複チェック用）
-  const selectedStartDates = useMemo(() => {
-    return dateCandidates.map(candidate => {
-      // 編集中の候補の場合は、editFormの値を使用（値がある場合のみ）
-      if (editingCandidate?.id === candidate.id && editForm.startDate) {
-        return new Date(editForm.startDate).getTime();
-      }
-      // それ以外は元の値を使用
-      return candidate.startDate.getTime();
-    });
-  }, [dateCandidates, editingCandidate, editForm.startDate]);
-
   // 選択済み日程の全日付一覧を計算（表示用）
   const selectedDateRanges = useMemo(() => {
     return dateCandidates.flatMap(candidate => {
@@ -68,8 +56,15 @@ const RequestTravelCreatePage = () => {
         editForm.startDate &&
         editForm.endDate
       ) {
-        current = new Date(editForm.startDate);
-        end = new Date(editForm.endDate);
+        // YYYY-MM-DD形式の文字列をローカル時間のDateに変換
+        const [startYear, startMonth, startDay] = editForm.startDate
+          .split('-')
+          .map(Number);
+        const [endYear, endMonth, endDay] = editForm.endDate
+          .split('-')
+          .map(Number);
+        current = new Date(startYear, startMonth - 1, startDay);
+        end = new Date(endYear, endMonth - 1, endDay);
       } else {
         current = new Date(candidate.startDate);
         end = new Date(candidate.endDate);
@@ -119,8 +114,13 @@ const RequestTravelCreatePage = () => {
   const handleEditSave = () => {
     if (!editingCandidate || !editForm.startDate || !editForm.endDate) return;
 
-    const newStartDate = new Date(editForm.startDate);
-    const newEndDate = new Date(editForm.endDate);
+    // YYYY-MM-DD形式の文字列をローカル時間のDateに変換
+    const [startYear, startMonth, startDay] = editForm.startDate
+      .split('-')
+      .map(Number);
+    const [endYear, endMonth, endDay] = editForm.endDate.split('-').map(Number);
+    const newStartDate = new Date(startYear, startMonth - 1, startDay);
+    const newEndDate = new Date(endYear, endMonth - 1, endDay);
 
     // バリデーション
     if (newStartDate >= newEndDate) {
@@ -139,11 +139,12 @@ const RequestTravelCreatePage = () => {
     );
     const isDuplicate = otherCandidates.some(
       candidate =>
-        candidate.startDate.toDateString() === newStartDate.toDateString()
+        candidate.startDate.toDateString() === newStartDate.toDateString() &&
+        candidate.endDate.toDateString() === newEndDate.toDateString()
     );
 
     if (isDuplicate) {
-      alert('同じ開始日の候補が既に存在します');
+      alert('同じ日程の候補が既に存在します');
       return;
     }
 
@@ -210,21 +211,23 @@ const RequestTravelCreatePage = () => {
 
     // 終了日を計算（宿泊数に応じて）
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + selectedPlan.nights);
-
-    // 重複チェック（出発日のみをチェック）
-    // 編集中の候補がある場合、その元の開始日は除外して重複チェック
-    let availableStartDates = selectedStartDates;
+    endDate.setDate(startDate.getDate() + selectedPlan.nights); // 重複チェック（完全に同じ日程の候補のみをチェック）
+    // 編集中の候補がある場合、その元の日程は除外して重複チェック
+    let candidatesToCheck = dateCandidates;
     if (editingCandidate) {
-      availableStartDates = selectedStartDates.filter(
-        dateTime => dateTime !== editingCandidate.startDate.getTime()
+      candidatesToCheck = dateCandidates.filter(
+        candidate => candidate.id !== editingCandidate.id
       );
     }
 
-    const isDuplicate = availableStartDates.includes(startDate.getTime());
+    const isDuplicate = candidatesToCheck.some(
+      candidate =>
+        candidate.startDate.toDateString() === startDate.toDateString() &&
+        candidate.endDate.toDateString() === endDate.toDateString()
+    );
 
     if (isDuplicate) {
-      alert('この出発日は既に候補に含まれています。');
+      alert('同じ日程の候補が既に存在します。');
       return;
     }
 
@@ -258,56 +261,76 @@ const RequestTravelCreatePage = () => {
   };
 
   // カレンダーの日付スタイリング
-  const mapDays = ({
-    date,
-  }: {
-    date: { year: number; month: { number: number }; day: number };
-  }) => {
-    const currentDate = new Date(date.year, date.month.number - 1, date.day);
+  const mapDays = useMemo(
+    () =>
+      ({
+        date,
+      }: {
+        date: { year: number; month: { number: number }; day: number };
+      }) => {
+        const currentDate = new Date(
+          date.year,
+          date.month.number - 1,
+          date.day
+        );
 
-    // 選択済み出発日かチェック
-    const isSelectedStartDate = selectedStartDates.includes(
-      currentDate.getTime()
-    );
+        // 選択済み出発日かチェック（同じ開始日でも異なる終了日なら許可）
+        const hasExactMatch = dateCandidates.some(candidate => {
+          const candidateEndDate = new Date(candidate.startDate);
+          candidateEndDate.setDate(
+            candidate.startDate.getDate() + (selectedPlan?.nights || 0)
+          );
 
-    // 選択済み期間に含まれる日付かチェック（表示用）
-    const isInSelectedRange = selectedDateRanges.some(
-      selectedDate => selectedDate.getTime() === currentDate.getTime()
-    );
+          return (
+            candidate.startDate.getTime() === currentDate.getTime() &&
+            candidateEndDate.getTime() ===
+              currentDate.getTime() +
+                (selectedPlan?.nights || 0) * 24 * 60 * 60 * 1000
+          );
+        });
 
-    // 過去の日付かチェック
-    const isPast = currentDate < new Date(new Date().setHours(0, 0, 0, 0));
+        const isSelectedStartDate = hasExactMatch;
 
-    let className = '';
-    let style = {};
+        // 選択済み期間に含まれる日付かチェック（表示用）
+        const isInSelectedRange = selectedDateRanges.some(
+          selectedDate => selectedDate.getTime() === currentDate.getTime()
+        );
 
-    if (isPast) {
-      className = 'past-date';
-      style = {
-        color: '#ccc',
-        backgroundColor: '#f5f5f5',
-        cursor: 'not-allowed',
-      };
-    } else if (isSelectedStartDate) {
-      // 出発日は選択不可（赤色）
-      className = 'selected-start-date';
-      style = {
-        color: 'white',
-        backgroundColor: '#ef4444',
-        cursor: 'not-allowed',
-      };
-    } else if (isInSelectedRange) {
-      // 宿泊期間は薄い色で表示（選択は可能）
-      className = 'selected-range';
-      style = { color: '#666', backgroundColor: '#fee2e2' };
-    }
+        // 過去の日付かチェック
+        const isPast = currentDate < new Date(new Date().setHours(0, 0, 0, 0));
 
-    return {
-      className,
-      style,
-      disabled: isPast || isSelectedStartDate, // 出発日のみ無効化
-    };
-  };
+        let className = '';
+        let style = {};
+
+        if (isPast) {
+          className = 'past-date';
+          style = {
+            color: '#ccc',
+            backgroundColor: '#f5f5f5',
+            cursor: 'not-allowed',
+          };
+        } else if (isSelectedStartDate) {
+          // 出発日は選択不可（赤色）
+          className = 'selected-start-date';
+          style = {
+            color: 'white',
+            backgroundColor: '#ef4444',
+            cursor: 'not-allowed',
+          };
+        } else if (isInSelectedRange) {
+          // 宿泊期間は薄い色で表示（選択は可能）
+          className = 'selected-range';
+          style = { color: '#666', backgroundColor: '#fee2e2' };
+        }
+
+        return {
+          className,
+          style,
+          disabled: isPast || isSelectedStartDate, // 出発日のみ無効化
+        };
+      },
+    [selectedDateRanges, dateCandidates, selectedPlan?.nights]
+  );
 
   return (
     <div className="min-h-screen bg-background p-4">
