@@ -34,7 +34,6 @@ const RequestTravelCreatePage = () => {
   const [step, setStep] = useState<'plan' | 'calendar'>('plan');
   const [selectedPlan, setSelectedPlan] = useState<TravelPlan | null>(null);
   const [dateCandidates, setDateCandidates] = useState<DateCandidate[]>([]);
-
   // 編集機能の状態管理
   const [editingCandidate, setEditingCandidate] =
     useState<DateCandidate | null>(null);
@@ -42,41 +41,6 @@ const RequestTravelCreatePage = () => {
     startDate: '',
     endDate: '',
   });
-
-  // 選択済み日程の全日付一覧を計算（表示用）
-  const selectedDateRanges = useMemo(() => {
-    return dateCandidates.flatMap(candidate => {
-      const dates = [];
-      let current: Date;
-      let end: Date;
-
-      // 編集中の候補の場合は、editFormの値を使用
-      if (
-        editingCandidate?.id === candidate.id &&
-        editForm.startDate &&
-        editForm.endDate
-      ) {
-        // YYYY-MM-DD形式の文字列をローカル時間のDateに変換
-        const [startYear, startMonth, startDay] = editForm.startDate
-          .split('-')
-          .map(Number);
-        const [endYear, endMonth, endDay] = editForm.endDate
-          .split('-')
-          .map(Number);
-        current = new Date(startYear, startMonth - 1, startDay);
-        end = new Date(endYear, endMonth - 1, endDay);
-      } else {
-        current = new Date(candidate.startDate);
-        end = new Date(candidate.endDate);
-      }
-
-      while (current <= end) {
-        dates.push(new Date(current));
-        current.setDate(current.getDate() + 1);
-      }
-      return dates;
-    });
-  }, [dateCandidates, editingCandidate, editForm.startDate, editForm.endDate]);
 
   // 日付フォーマット関数
   const formatDate = (date: Date): string => {
@@ -260,6 +224,30 @@ const RequestTravelCreatePage = () => {
     // ここで実際のプラン作成処理を行う
   };
 
+  // カレンダー用の色パレット（落ち着いた色合い）
+  const colorPalette = useMemo(
+    () => [
+      '#3b82f6', // blue-500
+      '#10b981', // emerald-500
+      '#f59e0b', // amber-500
+      '#8b5cf6', // violet-500
+      '#ef4444', // red-500
+      '#06b6d4', // cyan-500
+      '#84cc16', // lime-500
+      '#f97316', // orange-500
+    ],
+    []
+  );
+
+  // 候補ごとに色を割り当て
+  const candidateColors = useMemo(() => {
+    const colors: Record<string, string> = {};
+    dateCandidates.forEach((candidate, index) => {
+      colors[candidate.id] = colorPalette[index % colorPalette.length];
+    });
+    return colors;
+  }, [dateCandidates, colorPalette]);
+
   // カレンダーの日付スタイリング
   const mapDays = useMemo(
     () =>
@@ -274,8 +262,21 @@ const RequestTravelCreatePage = () => {
           date.day
         );
 
-        // 選択済み出発日かチェック（同じ開始日でも異なる終了日なら許可）
-        const hasExactMatch = dateCandidates.some(candidate => {
+        // 過去の日付かチェック
+        const isPast = currentDate < new Date(new Date().setHours(0, 0, 0, 0));
+
+        // この日付に関連する候補を探す
+        const relatedCandidates = dateCandidates.filter(candidate => {
+          const isStartDate =
+            candidate.startDate.getTime() === currentDate.getTime();
+          const isInRange =
+            currentDate >= candidate.startDate &&
+            currentDate <= candidate.endDate;
+          return isStartDate || isInRange;
+        });
+
+        // 完全一致の候補（同じプランで同じ開始日）
+        const exactMatchCandidate = dateCandidates.find(candidate => {
           const candidateEndDate = new Date(candidate.startDate);
           candidateEndDate.setDate(
             candidate.startDate.getDate() + (selectedPlan?.nights || 0)
@@ -289,15 +290,10 @@ const RequestTravelCreatePage = () => {
           );
         });
 
-        const isSelectedStartDate = hasExactMatch;
-
-        // 選択済み期間に含まれる日付かチェック（表示用）
-        const isInSelectedRange = selectedDateRanges.some(
-          selectedDate => selectedDate.getTime() === currentDate.getTime()
+        const isSelectedStartDate = !!exactMatchCandidate;
+        const isStartOfAnyCandidate = relatedCandidates.some(
+          candidate => candidate.startDate.getTime() === currentDate.getTime()
         );
-
-        // 過去の日付かチェック
-        const isPast = currentDate < new Date(new Date().setHours(0, 0, 0, 0));
 
         let className = '';
         let style = {};
@@ -310,26 +306,45 @@ const RequestTravelCreatePage = () => {
             cursor: 'not-allowed',
           };
         } else if (isSelectedStartDate) {
-          // 出発日は選択不可（赤色）
-          className = 'selected-start-date';
+          // 完全一致の出発日は選択不可（該当候補の色）
+          const color = candidateColors[exactMatchCandidate.id];
+          className = 'selected-start-date-exact';
           style = {
             color: 'white',
-            backgroundColor: '#ef4444',
+            backgroundColor: color,
             cursor: 'not-allowed',
+            fontWeight: 'bold',
           };
-        } else if (isInSelectedRange) {
-          // 宿泊期間は薄い色で表示（選択は可能）
+        } else if (isStartOfAnyCandidate) {
+          // 異なる期間の出発日がある場合（該当候補の色で薄く）
+          const startCandidate = relatedCandidates.find(
+            candidate => candidate.startDate.getTime() === currentDate.getTime()
+          );
+          const color = candidateColors[startCandidate!.id];
+          className = 'selected-start-date-partial';
+          style = {
+            color: 'white',
+            backgroundColor: color,
+            fontWeight: 'bold',
+            opacity: 0.8,
+          };
+        } else if (relatedCandidates.length > 0) {
+          // 宿泊期間内（最初の候補の色で非常に薄く）
+          const color = candidateColors[relatedCandidates[0].id];
           className = 'selected-range';
-          style = { color: '#666', backgroundColor: '#fee2e2' };
+          style = {
+            backgroundColor: `${color}15`, // 非常に薄い透明度
+            color: 'inherit',
+          };
         }
 
         return {
           className,
           style,
-          disabled: isPast || isSelectedStartDate, // 出発日のみ無効化
+          disabled: isPast || isSelectedStartDate,
         };
       },
-    [selectedDateRanges, dateCandidates, selectedPlan?.nights]
+    [dateCandidates, selectedPlan?.nights, candidateColors]
   );
 
   return (
@@ -433,10 +448,12 @@ const RequestTravelCreatePage = () => {
                 </div>
 
                 {selectedPlan.nights > 0 && (
-                  <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="text-sm text-blue-600 text-center">
-                      💡 出発日を選択すると、{selectedPlan.nights}泊
-                      {selectedPlan.days}日の期間が自動で設定されます
+                  <div className="mt-4">
+                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="text-sm text-blue-600 text-center">
+                        💡 出発日を選択すると、{selectedPlan.nights}泊
+                        {selectedPlan.days}日の期間が自動で設定されます
+                      </div>
                     </div>
                   </div>
                 )}
@@ -469,16 +486,26 @@ const RequestTravelCreatePage = () => {
                         >
                           {/* 通常表示 */}
                           <div className="flex items-center justify-between p-3">
-                            <div>
-                              <div className="font-medium">
-                                {editingCandidate?.id === candidate.id &&
-                                editForm.startDate &&
-                                editForm.endDate
-                                  ? `${formatDate(new Date(editForm.startDate))} 〜 ${formatDate(new Date(editForm.endDate))}`
-                                  : candidate.formattedRange}
-                              </div>
-                              <div className="text-sm text-foreground-500">
-                                {candidate.displayText}
+                            <div className="flex items-center gap-3">
+                              {/* 候補の色インジケーター */}
+                              <div
+                                className="w-4 h-4 rounded-full flex-shrink-0"
+                                style={{
+                                  backgroundColor:
+                                    candidateColors[candidate.id],
+                                }}
+                              />
+                              <div>
+                                <div className="font-medium">
+                                  {editingCandidate?.id === candidate.id &&
+                                  editForm.startDate &&
+                                  editForm.endDate
+                                    ? `${formatDate(new Date(editForm.startDate))} 〜 ${formatDate(new Date(editForm.endDate))}`
+                                    : candidate.formattedRange}
+                                </div>
+                                <div className="text-sm text-foreground-500">
+                                  {candidate.displayText}
+                                </div>
                               </div>
                             </div>
                             <div className="flex gap-2">
