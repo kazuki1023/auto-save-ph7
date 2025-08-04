@@ -1,10 +1,12 @@
 // 回答者が回答したあとに遷移して、その後の催促を促すページ
 
+import { Suspense } from 'react';
+
+import Rank from './Rank';
 import ShareButton from './ShareButton';
 
 const SharePage = () => {
   // 仮データ（本来はpropsやAPIから取得）
-  const answerRank = 4;
   const notAnswered = ['井上岳', '塚越UMA'];
 
   return (
@@ -18,7 +20,9 @@ const SharePage = () => {
             あなたの日調回答順は
           </span>
           <span className="text-6xl font-extrabold text-[#8B2C4B] mb-2 drop-shadow-[0_2px_0_rgba(255,255,255,0.8)]">
-            {answerRank}位
+            <Suspense>
+              <Rank />
+            </Suspense>
           </span>
           <span className="text-gray-700 text-lg">でした！</span>
         </div>
