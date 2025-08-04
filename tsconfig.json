@@ -28,7 +28,8 @@
     ".next/types/**/*.ts",
     "**/**/*.ts",
     "**/**/*.tsx",
-    "**/**/**/*.ts"
+    "**/**/**/*.ts",
+    "src/app/answer/[uuid]"
   ],
   "exclude": ["node_modules"]
 }
