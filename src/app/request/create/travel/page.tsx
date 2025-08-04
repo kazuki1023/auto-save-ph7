@@ -176,7 +176,7 @@ const RequestTravelCreatePage = () => {
 
     // 終了日を計算（宿泊数に応じて）
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + selectedPlan.nights); // 重複チェック（完全に同じ日程の候補のみをチェック）
+    endDate.setDate(startDate.getDate() + selectedPlan.nights);
     // 編集中の候補がある場合、その元の日程は除外して重複チェック
     let candidatesToCheck = dateCandidates;
     if (editingCandidate) {
