@@ -4,8 +4,7 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-import { Alert, Card, CardBody, CardHeader } from '@/components/heroui';
-import Button from '@/components/heroui/Button';
+import { Alert, Button, Card, CardBody, CardHeader } from '@/components/heroui';
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { createAnswer } from '@/reposiroties/answers';
 import { getRequestByUuid, type RequestData } from '@/reposiroties/requests';
@@ -249,7 +248,6 @@ const AnswerPage = () => {
       });
 
       if (result) {
-        console.log('回答が保存されました:', result);
         router.push('/answer/share');
       } else {
         console.error('回答の保存に失敗しました');
@@ -296,7 +294,6 @@ const AnswerPage = () => {
             </div>
           </CardHeader>
         </Card>
-
         {/* 名前入力 */}
         <Card>
           <CardBody className="p-4">
@@ -318,14 +315,12 @@ const AnswerPage = () => {
             </div>
           </CardBody>
         </Card>
-
         {/* グローバルエラー表示 */}
         {globalError && (
           <Alert color="danger" variant="bordered">
             {globalError}
           </Alert>
         )}
-
         {/* リクエストタイプ別のフォーム */}
         {requestData.type === 'trip' && requestData.content_json.candidates && (
           <TripAnswerForm
@@ -337,7 +332,6 @@ const AnswerPage = () => {
             onCandidateComment={setCandidateComment}
           />
         )}
-
         {/* その他のタイプの場合 */}
         {requestData.type !== 'trip' && (
           <Card>
@@ -348,17 +342,11 @@ const AnswerPage = () => {
             </CardBody>
           </Card>
         )}
-
         {/* 確定ボタン */}
         <Button
           onPress={handleRedirect}
           className="bg-[#61C48D] text-white shadow-sm w-full"
           size="lg"
-          disabled={
-            candidateAnswers.size === 0 ||
-            candidateAnswers.size <
-              (requestData.content_json.candidates?.length || 0)
-          }
         >
           日程調整候補日を確定する
         </Button>
