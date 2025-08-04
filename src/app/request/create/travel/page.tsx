@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
+import { supabase } from '@/lib/supabase/supabaseClient';
 
 import './calendar-styles.css';
 
@@ -213,15 +214,58 @@ const RequestTravelCreatePage = () => {
     setDateCandidates(prev => prev.filter(candidate => candidate.id !== id));
   };
 
-  const handleCreatePlan = () => {
+  const handleCreatePlan = async () => {
     if (dateCandidates.length === 0) {
       alert('日程候補を選択してください。');
       return;
     }
 
-    console.log('選択されたプラン:', selectedPlan);
-    console.log('日程候補:', dateCandidates);
-    // ここで実際のプラン作成処理を行う
+    try {
+      // requestsテーブルに登録するデータを作成
+      const now = new Date().toISOString();
+      const requestData = {
+        title: `${selectedPlan?.nights}泊${selectedPlan?.days}日の旅行`,
+        content_json: {
+          plan: {
+            nights: selectedPlan?.nights,
+            days: selectedPlan?.days,
+          },
+          candidates: dateCandidates.map(candidate => ({
+            start: candidate.startDate.toISOString(),
+            end: candidate.endDate.toISOString(),
+          })),
+          notes: '旅行の日程候補を作成しました',
+        },
+        type: 'trip' as const, // 型を明示的に指定
+        updated_at: now,
+        created_at: now,
+      };
+
+      console.log('登録データ:', requestData);
+
+      // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
+      const { data, error } = await supabase
+        .from('requests')
+        .insert(requestData)
+        .select();
+
+      if (error) {
+        console.error('登録エラー:', error);
+        alert('登録に失敗しました。もう一度お試しください。');
+        return;
+      }
+
+      console.log('登録成功:', data);
+      alert('旅行プランが正常に作成されました！');
+
+      // 成功後は初期状態に戻す
+      setStep('plan');
+      setSelectedPlan(null);
+      setDateCandidates([]);
+    } catch (err) {
+      console.error('予期しないエラー:', err);
+      alert('予期しないエラーが発生しました。');
+    }
   };
 
   // カレンダー用の色パレット（落ち着いた色合い）

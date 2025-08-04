@@ -49,7 +49,7 @@ export type Database = {
           },
         ];
       };
-      questions: {
+      requests: {
         Row: {
           content_json: Json;
           created_at: string;
