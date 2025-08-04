@@ -132,3 +132,27 @@ export const updateAnswer = async (
     return null;
   }
 };
+
+/**
+ * 指定したquestion_id(uuid)に紐づくanswersの件数を取得する
+ */
+export const getAnswersCountByRequestId = async (
+  requestId: string
+): Promise<number | null> => {
+  try {
+    const { count, error } = await supabase
+      .from('answers')
+      .select('*', { count: 'exact', head: true })
+      .eq('question_id', requestId);
+
+    if (error) {
+      console.error('回答数取得エラー:', error);
+      return null;
+    }
+
+    return count ?? 0;
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return null;
+  }
+};

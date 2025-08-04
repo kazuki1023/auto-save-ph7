@@ -1,12 +1,9 @@
 'use client';
 
-import { createClient } from '@supabase/supabase-js';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { getAnswersCountByRequestId } from '@/reposiroties/answers';
 
 const Rank = () => {
   const searchParams = useSearchParams();
@@ -16,17 +13,8 @@ const Rank = () => {
   useEffect(() => {
     if (!uuid) return;
     const fetchCount = async () => {
-      const { count, error } = await supabase
-        .from('answers')
-        .select('*', { count: 'exact', head: true })
-        .eq('question_id', uuid);
-
-      if (error) {
-        console.error(error);
-        setCount(null);
-      } else {
-        setCount(count ?? 0);
-      }
+      const answeredCount = await getAnswersCountByRequestId(uuid);
+      setCount(answeredCount);
     };
     fetchCount();
   }, [uuid]);
