@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
@@ -33,6 +34,7 @@ const RequestTravelCreatePage = () => {
     startDate: '',
     endDate: '',
   });
+  const router = useRouter();
 
   // 編集モードを開始
   const handleEditStart = (candidate: DateCandidate) => {
@@ -209,23 +211,18 @@ const RequestTravelCreatePage = () => {
       };
 
       // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('requests')
         .insert(requestData)
-        .select();
+        .select('id');
+      console.log(data);
 
       if (error) {
         console.error('登録エラー:', error);
         alert('登録に失敗しました。もう一度お試しください。');
         return;
       }
-
-      alert('旅行プランが正常に作成されました！');
-
-      // 成功後は初期状態に戻す
-      setStep('plan');
-      setSelectedPlan(null);
-      setDateCandidates([]);
+      await router.push(`/request/shareUrl/${data[0].id}`);
     } catch (err) {
       console.error('予期しないエラー:', err);
       alert('予期しないエラーが発生しました。');
