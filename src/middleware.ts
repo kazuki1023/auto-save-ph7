@@ -12,8 +12,9 @@ export const config = {
      * - favicon.ico (favicon file)
      * - / (root)
      * - /request (request pages - 認証不要)
+     * - /answer (answer pages - 認証不要)
      */
-    '/((?!api|webhook|_next/static|_next/image|favicon.ico|request|$).*)',
+    '/((?!api|webhook|_next/static|_next/image|favicon.ico|request|answer|$).*)',
   ],
 };
 
