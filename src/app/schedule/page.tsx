@@ -1,10 +1,13 @@
 'use client';
 
-import { Button } from '@heroui/button';
-import { Card, CardFooter, CardHeader } from '@heroui/card';
-import { Link } from '@heroui/link';
-
 import { SignInButton } from '@/components/auth/signin_button';
+import {
+  Button,
+  Card,
+  CardFooter,
+  CardHeader,
+  Link,
+} from '@/components/heroui';
 import { dummy_schedule } from '@/const/dummy_schedule';
 
 export default function Schedule() {
