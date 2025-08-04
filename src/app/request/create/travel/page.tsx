@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
+import { generateCandidateColors } from '@/const/calendar_colors';
 import { TRAVEL_PLANS, type TravelPlan } from '@/const/travel_plans';
 import {
   formatDate,
@@ -231,29 +232,10 @@ const RequestTravelCreatePage = () => {
     }
   };
 
-  // カレンダー用の色パレット（落ち着いた色合い）
-  const colorPalette = useMemo(
-    () => [
-      '#3b82f6', // blue-500
-      '#10b981', // emerald-500
-      '#f59e0b', // amber-500
-      '#8b5cf6', // violet-500
-      '#ef4444', // red-500
-      '#06b6d4', // cyan-500
-      '#84cc16', // lime-500
-      '#f97316', // orange-500
-    ],
-    []
-  );
-
   // 候補ごとに色を割り当て
   const candidateColors = useMemo(() => {
-    const colors: Record<string, string> = {};
-    dateCandidates.forEach((candidate, index) => {
-      colors[candidate.id] = colorPalette[index % colorPalette.length];
-    });
-    return colors;
-  }, [dateCandidates, colorPalette]);
+    return generateCandidateColors(dateCandidates.map(c => c.id));
+  }, [dateCandidates]);
 
   // カレンダーの日付スタイリング
   const mapDays = useMemo(
