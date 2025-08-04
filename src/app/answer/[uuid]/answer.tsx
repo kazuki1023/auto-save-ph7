@@ -1,19 +1,23 @@
 'use client';
 // 回答画面（統一版）- UIコンポーネント
 
-import {
-  Modal,
-  ModalBody,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-} from '@heroui/modal';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { FaWandMagicSparkles } from 'react-icons/fa6';
 
 import { SignInButton } from '@/components/auth/signin_button';
-import { Alert, Button, Card, CardBody, CardHeader } from '@/components/heroui';
+import {
+  Alert,
+  Button,
+  Card,
+  CardBody,
+  CardHeader,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+} from '@/components/heroui';
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { createAnswer } from '@/reposiroties/answers';
 
