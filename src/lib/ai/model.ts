@@ -1,6 +1,8 @@
 import { openai } from '@ai-sdk/openai';
-import { cached } from './middleware';
+
 import { getEnv } from '../env';
+
+import { cached } from './middleware';
 
 export function getModel() {
   const baseModel = openai('gpt-4o');

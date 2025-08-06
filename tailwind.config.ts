@@ -1,14 +1,15 @@
-import { heroui } from "@heroui/theme"
-import colors from 'tailwindcss/colors'
-import type { Config } from "tailwindcss";
+import { heroui } from '@heroui/theme';
+import colors from 'tailwindcss/colors';
+
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
-    "../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
+    '../../../node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
     transparent: 'transparent',
@@ -16,23 +17,6 @@ const config: Config = {
     extend: {
       colors: {
         white: '#ffffff',
-        product: {
-          invoice: {
-            DEFAULT: '#001a88',
-          },
-          docissue: {
-            DEFAULT: '#6aa900',
-          },
-          box: {
-            DEFAULT: '#009bff',
-          },
-          workflow: {
-            DEFAULT: '#00acb0',
-          },
-          card: {
-            DEFAULT: '#006775',
-          },
-        },
         tremor: {
           brand: {
             faint: colors.blue[50],

@@ -1,0 +1,98 @@
+---
+description: このプロジェクトのフォルダ構成とファイルの役割について
+globs:
+alwaysApply: true
+---
+
+# フォルダ構成
+
+```
+.
+├── app
+│   ├── answer
+│   │   ├── [uuid].tsx
+│   │   ├── confirm
+│   │   └── share
+│   ├── api
+│   │   └── auth
+│   ├── favicon.ico
+│   ├── global.css
+│   ├── layout.tsx
+│   ├── page.tsx
+│   ├── request
+│   │   ├── confirm
+│   │   ├── createAnswerList
+│   │   ├── createPassword
+│   │   ├── page.tsx
+│   │   ├── registerMailadress
+│   │   └── shareUrl
+│   └── schedule
+│       ├── create
+│       ├── layout.tsx
+│       ├── page.tsx
+│       ├── register
+│       └── view
+├── auth.ts
+├── components
+├── lib
+│   ├── ai
+│   │   ├── middleware.ts
+│   │   └── model.ts
+│   ├── auth
+│   │   ├── index.ts
+│   │   └── types.ts
+│   ├── date
+│   │   └── index.ts
+│   ├── env.ts
+│   └── supabase
+│       ├── config.toml
+│       ├── database.types.ts
+│       └── supabaseClient.ts
+├── middleware.ts
+└── reposiroties
+    ├── answers.ts
+    └── questions.ts
+
+```
+
+## libフォルダ
+
+- ここでは使用しているライブラリ固有のコードで、初期化や設定のコードなどを設定します
+
+## reposirotiesフォルダ
+
+- DBやSaaSにアクセスする層
+  - 今回はsupabaseを使用しているので、supabaseのクエリを記述します
+- 一つのテーブルに対して、一つのファイルを作成します
+
+## appフォルダ内の各ページの役割
+
+- app配下のフォルダは、以下のように分類されています
+
+```tree
+.
+├── action.ts
+├── (フォルダ名).tsx
+└── page.tsx
+```
+
+- **action.ts**
+
+  - データ取得や作成、更新、削除などを行っている
+  - データの取得、作成、更新、削除の具体の処理は、reposirotiesフォルダ内の関数を呼び出す
+  - 'use server'を必ず使用します
+
+- **(フォルダ名).tsx**
+
+  - ページのUIを担当している
+  - 'use client'を必ず使用します
+
+- **page.tsx**
+  - action.ts内の関数を呼び出す
+  - ページのUIを担当している、**(フォルダ名).tsx**を呼び出す
+
+## データについて
+
+- データの取得、作成、更新、削除の具体の処理は、reposirotiesフォルダ内の関数を呼び出す
+- データの取得、作成、更新、削除の具体の処理は、reposirotiesフォルダ内の関数を呼び出す
+- 'use server'を必ず使用します

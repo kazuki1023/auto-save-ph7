@@ -1,9 +1,9 @@
-import RegisterForm from "./form";
+import ResultBord from './result';
 
 export default async function Register() {
   return (
     <>
-      <RegisterForm />
+      <ResultBord />
     </>
   );
 }

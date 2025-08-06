@@ -1,18 +1,19 @@
-import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import { CustomSession } from "./lib/auth/types";
-  
+import NextAuth from 'next-auth';
+import Google from 'next-auth/providers/google';
+
+import { CustomSession } from './lib/auth/types';
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
-    strategy: "jwt",
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60,
-    updateAge: 600
+    updateAge: 600,
   },
   logger: {
-    warn: (code) => {
+    warn: code => {
       console.warn(code);
     },
-    error: (code) => {
+    error: code => {
       console.error(code);
     },
   },
@@ -22,14 +23,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       authorization: {
         params: {
-          prompt: "consent",
-          access_type: "offline",
+          prompt: 'consent',
+          access_type: 'offline',
           scope: [
             'openid',
             'email',
             'https://www.googleapis.com/auth/calendar',
           ].join(' '),
-          response_type: "code",
+          response_type: 'code',
         },
       },
     }),
@@ -46,7 +47,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return CustomSession;
     },
     jwt: async ({ token, account }) => {
-      if (account?.provider === "google") {
+      if (account?.provider === 'google') {
         token.accessToken = account.access_token;
         token.refreshToken = account.refresh_token;
       }
@@ -57,11 +58,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
   secret: process.env.AUTH_SECRET,
-  basePath: "/api/auth",
+  basePath: '/api/auth',
   pages: {
-    signIn: "/auth/signin",
-    signOut: "/auth/signout",
-    error: "/auth/error",
+    signIn: '/auth/signin',
+    signOut: '/auth/signout',
+    error: '/auth/error',
   },
 });
-
