@@ -11,7 +11,7 @@ description: 'copilotが必ず従うべきルール'
 
 ## コーディング規約（Next.js App Router）
 
-- Next.js（app ディレクトリ）を前提。**Server Componentsをデフォ**、必要なときだけ`"use client"`。
+- Next.js（app ディレクトリ）を前提。**Server Componentsをデフォルト**、必要なときだけ`"use client"`。
 - 取得は`fetch()`の**キャッシュ/再検証**（`{ cache: 'force-cache' | 'no-store', next: { revalidate } }`）を明示。
 - ルーティングは`app/`の**ファイル規約**（`page.tsx`, `layout.tsx`, `route.ts` など）を厳守。
 - APIは**Route Handlers**（`app/api/**/route.ts`）。処理は極力サーバ側に寄せ、**Server Actions**を検討。
