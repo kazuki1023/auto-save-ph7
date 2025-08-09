@@ -1,6 +1,6 @@
 ---
 applyTo: '*'
-description: 'coplilotが必ず従うべきルール'
+description: 'copilotが必ず従うべきルール'
 ---
 
 # Copilot Instructions (Repo-wide)
