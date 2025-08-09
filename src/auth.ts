@@ -84,7 +84,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return {
           ...token,
           accessToken: refreshedTokens.access_token,
-          expiresAt: Math.floor(Date.now() / 1000 + refreshedTokens.expires_in),
+          expiresAt: Math.floor(Date.now() / 1000) + refreshedTokens.expires_in,
           refreshToken: refreshedTokens.refresh_token ?? token.refreshToken,
         };
       } catch (error) {
