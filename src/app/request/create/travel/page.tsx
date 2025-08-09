@@ -13,7 +13,7 @@ import {
   parseLocalDate,
 } from '@/lib/date/formatters';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
-import { supabase } from '@/lib/supabase/supabaseClient';
+import { createRequest } from '@/reposiroties/requests';
 
 interface DateCandidate {
   id: string;
@@ -210,18 +210,13 @@ const RequestTravelCreatePage = () => {
         created_at: now,
       };
 
-      // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
-      const { data, error } = await supabase
-        .from('requests')
-        .insert(requestData)
-        .select('id');
+      const requestId = await createRequest(requestData);
 
-      if (error) {
-        console.error('登録エラー:', error);
+      if (!requestId) {
         alert('登録に失敗しました。もう一度お試しください。');
         return;
       }
-      await router.push(`/request/shareUrl/${data[0].id}`);
+      await router.push(`/request/shareUrl/${requestId}`);
     } catch (err) {
       console.error('予期しないエラー:', err);
       alert('予期しないエラーが発生しました。');

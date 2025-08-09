@@ -1,4 +1,4 @@
-import { Tables } from '@/lib/supabase/database.types';
+import { Json, Tables } from '@/lib/supabase/database.types';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
 interface TripCandidate {
@@ -18,6 +18,16 @@ export interface RequestData {
     candidates?: TripCandidate[];
     notes?: string;
   };
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface CreateRequestData {
+  title: string;
+  type: 'trip' | 'meal' | 'event';
+  content_json: Json;
+  created_at: string;
+  updated_at: string;
 }
 
 /**
@@ -67,4 +77,28 @@ export const getRequests = async (): Promise<Tables<'requests'>[] | null> => {
   const { data, error } = await supabase.from('requests').select('*');
   if (error) throw error;
   return data;
+};
+
+/**
+ * 新しいリクエストを作成する
+ */
+export const createRequest = async (
+  requestData: CreateRequestData
+): Promise<string | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('requests')
+      .insert(requestData)
+      .select('id');
+
+    if (error) {
+      console.error('登録エラー:', error);
+      return null;
+    }
+
+    return data[0].id;
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return null;
+  }
 };
