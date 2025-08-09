@@ -76,7 +76,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         });
 
         if (!response.ok) {
-          throw new Error('トークンのリフレッシュに失敗しました');
+          const errorDetails = await response.text();
+          throw new Error(`トークンのリフレッシュに失敗しました (status: ${response.status}, details: ${errorDetails})`);
         }
 
         const refreshedTokens = await response.json();
