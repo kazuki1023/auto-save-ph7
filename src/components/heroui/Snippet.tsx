@@ -9,7 +9,13 @@ const Snippet = ({
   children: React.ReactNode;
 }) => {
   return (
-    <HerouiSnippet {...props} symbol="">
+    <HerouiSnippet
+      {...props}
+      symbol=""
+      tooltipProps={{
+        isDisabled: true,
+      }}
+    >
       {children}
     </HerouiSnippet>
   );
