@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { Alert, Card, CardBody } from '@/components/heroui';
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 import { formatDateRange } from '@/lib/date/formatters';
-import { type RequestData } from '@/reposiroties/requests';
+import { type RequestData } from '@/reposirories/requests';
 
 interface TripAnswerFormProps {
   requestData: RequestData;
