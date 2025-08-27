@@ -7,10 +7,10 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: '12.2.3 (519615d)';
+    PostgrestVersion: '12.2.12 (cd3cf9e)';
   };
   public: {
     Tables: {
@@ -44,7 +44,7 @@ export type Database = {
             foreignKeyName: 'answers_question_id_fkey';
             columns: ['question_id'];
             isOneToOne: false;
-            referencedRelation: 'questions';
+            referencedRelation: 'requests';
             referencedColumns: ['id'];
           },
         ];
@@ -64,7 +64,7 @@ export type Database = {
           id?: string;
           title: string;
           type: Database['public']['Enums']['questions_type'];
-          updated_at: string;
+          updated_at?: string;
         };
         Update: {
           content_json?: Json;
