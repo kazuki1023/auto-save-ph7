@@ -191,7 +191,6 @@ const RequestTravelCreatePage = () => {
 
     try {
       // requestsテーブルに登録するデータを作成
-      const now = new Date().toISOString();
       const requestData = {
         title: `${selectedPlan?.nights}泊${selectedPlan?.days}日の旅行`,
         content_json: {
@@ -206,8 +205,6 @@ const RequestTravelCreatePage = () => {
           notes: '旅行の日程候補を作成しました',
         },
         type: 'trip' as const,
-        updated_at: now,
-        created_at: now,
       };
 
       // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
