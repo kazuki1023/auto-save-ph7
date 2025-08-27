@@ -8,7 +8,7 @@ import { Alert, Button, Card, CardBody } from '@/components/heroui';
 import { useAnswerForm } from '@/hooks/useAnswerForm';
 import { useAutoInput } from '@/hooks/useAutoInput';
 
-import type { RequestData } from '@/reposiroties/requests';
+import type { RequestData } from '@/reposirories/requests';
 import type { Session } from 'next-auth';
 
 interface AnswerProps {

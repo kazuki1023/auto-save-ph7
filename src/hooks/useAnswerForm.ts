@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
-import { createAnswer } from '@/reposiroties/answers';
+import { createAnswer } from '@/reposirories/answers';
 
-import type { RequestData } from '@/reposiroties/requests';
+import type { RequestData } from '@/reposirories/requests';
 
 export interface UseAnswerFormProps {
   requestData: RequestData;
