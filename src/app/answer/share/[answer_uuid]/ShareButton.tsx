@@ -1,21 +1,22 @@
 'use client';
 
-import { Button } from '@heroui/button';
 import { FaShareAlt } from 'react-icons/fa';
+
+import Button from '@/components/heroui/Button';
 
 const ShareButton = () => {
   // シェアボタンのクリック処理（URLコピーのみ）
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    alert('URLをコピーしました！');
   };
   return (
     <Button
       color="primary"
-      className="w-full h-14 text-lg flex items-center justify-center gap-2 mb-8 font-bold tracking-wide shadow-sm bg-white text-[#8B2C4B]"
+      className="w-full h-12 text-lg flex items-center justify-center gap-2 font-bold tracking-wide shadow-sm"
+      aria-label="回答順位をシェアする"
       onPress={handleShare}
     >
-      <FaShareAlt className="w-6 h-6" />
+      <FaShareAlt className="w-5 h-5" />
       回答順位をシェアする
     </Button>
   );

@@ -132,3 +132,52 @@ export const updateAnswer = async (
     return null;
   }
 };
+
+/**
+ * idから回答を取得する
+ */
+export const getAnswerById = async (
+  id: string
+): Promise<Tables<'answers'> | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('answers')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      console.error('回答データ取得エラー:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return null;
+  }
+};
+
+/**
+ * 特定のquestion_idに対する回答の数を取得する
+ */
+export const countAnswersByQuestionId = async (
+  questionId: string
+): Promise<number> => {
+  try {
+    const { count, error } = await supabase
+      .from('answers')
+      .select('id', { count: 'exact' })
+      .eq('question_id', questionId);
+
+    if (error) {
+      console.error('回答数取得エラー:', error);
+      return 0;
+    }
+
+    return count ?? 0;
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return 0;
+  }
+};
