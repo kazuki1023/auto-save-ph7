@@ -30,7 +30,7 @@ const SharePage = async ({ params }: { params: { answer_uuid: string } }) => {
             </span>
             <span className="text-base text-gray-700">でした！</span>
           </div>
-          <ShareButton />
+          <ShareButton answerUuid={answer_uuid} />
         </CardBody>
         <CardFooter />
       </Card>
