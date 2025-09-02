@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react';
 
 import { Alert, Card, CardBody, CardHeader, Chip } from '@/components/heroui';
 import { formatDateRange } from '@/lib/date/formatters';
-import { getAnswersByRequestId } from '@/reposiroties/answers';
-import { getRequestByUuid, type RequestData } from '@/reposiroties/requests';
+import { getAnswersByRequestId } from '@/repositories/answers';
+import { getRequestByUuid, type RequestData } from '@/repositories/requests';
 
 import type { Tables } from '@/lib/supabase/database.types';
 

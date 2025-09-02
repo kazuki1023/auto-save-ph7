@@ -24,6 +24,8 @@ interface DateCandidate {
 }
 
 const RequestTravelCreatePage = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const [step, setStep] = useState<'plan' | 'calendar'>('plan');
   const [selectedPlan, setSelectedPlan] = useState<TravelPlan | null>(null);
   const [dateCandidates, setDateCandidates] = useState<DateCandidate[]>([]);
@@ -230,7 +232,7 @@ const RequestTravelCreatePage = () => {
     return generateCandidateColors(dateCandidates.map(c => c.id));
   }, [dateCandidates]);
 
-  // カレンダーの日付スタイリング
+  // カレンダーの日付スタイリング（過去日は“非表示”に変更）
   const mapDays = useMemo(
     () =>
       ({
@@ -244,8 +246,18 @@ const RequestTravelCreatePage = () => {
           date.day
         );
 
-        // 過去の日付かチェック
-        const isPast = currentDate < new Date(new Date().setHours(0, 0, 0, 0));
+        // 当日0時
+        const todayStart = new Date(new Date().setHours(0, 0, 0, 0));
+
+        // 過去日チェック
+        const isPast = currentDate < todayStart;
+
+        // ★ 過去日は完全に非表示
+        if (isPast) {
+          return { hidden: true as const };
+        }
+
+        // --- ここから先はこれまで通り（過去日以外だけ処理） ---
 
         // この日付に関連する候補を探す
         const relatedCandidates = dateCandidates.filter(candidate => {
@@ -263,7 +275,6 @@ const RequestTravelCreatePage = () => {
           candidateEndDate.setDate(
             candidate.startDate.getDate() + (selectedPlan?.nights || 0)
           );
-
           return (
             candidate.startDate.getTime() === currentDate.getTime() &&
             candidateEndDate.getTime() ===
@@ -278,18 +289,11 @@ const RequestTravelCreatePage = () => {
         );
 
         let className = '';
-        let style = {};
+        let style: React.CSSProperties = {};
 
-        if (isPast) {
-          className = 'past-date';
-          style = {
-            color: '#ccc',
-            backgroundColor: '#f5f5f5',
-            cursor: 'not-allowed',
-          };
-        } else if (isSelectedStartDate) {
+        if (isSelectedStartDate) {
           // 完全一致の出発日は選択不可（該当候補の色）
-          const color = candidateColors[exactMatchCandidate.id];
+          const color = candidateColors[exactMatchCandidate!.id];
           className = 'selected-start-date-exact';
           style = {
             color: 'white',
@@ -297,12 +301,15 @@ const RequestTravelCreatePage = () => {
             cursor: 'not-allowed',
             fontWeight: 'bold',
           };
-        } else if (isStartOfAnyCandidate) {
+          return { className, style, disabled: true as const };
+        }
+
+        if (isStartOfAnyCandidate) {
           // 異なる期間の出発日がある場合（該当候補の色で薄く）
           const startCandidate = relatedCandidates.find(
             candidate => candidate.startDate.getTime() === currentDate.getTime()
-          );
-          const color = candidateColors[startCandidate!.id];
+          )!;
+          const color = candidateColors[startCandidate.id];
           className = 'selected-start-date-partial';
           style = {
             color: 'white',
@@ -310,21 +317,20 @@ const RequestTravelCreatePage = () => {
             fontWeight: 'bold',
             opacity: 0.8,
           };
-        } else if (relatedCandidates.length > 0) {
+          return { className, style };
+        }
+
+        if (relatedCandidates.length > 0) {
           // 宿泊期間内（最初の候補の色で非常に薄く）
           const color = candidateColors[relatedCandidates[0].id];
           className = 'selected-range';
           style = {
-            backgroundColor: `${color}15`, // 非常に薄い透明度
+            backgroundColor: `${color}15`,
             color: 'inherit',
           };
         }
 
-        return {
-          className,
-          style,
-          disabled: isPast || isSelectedStartDate,
-        };
+        return { className, style };
       },
     [dateCandidates, selectedPlan?.nights, candidateColors]
   );
@@ -421,7 +427,7 @@ const RequestTravelCreatePage = () => {
                   <Calendar
                     numberOfMonths={1}
                     onChange={handleDateSelect}
-                    minDate={new Date()}
+                    minDate={today}
                     format="YYYY/MM/DD"
                     className="custom-calendar"
                     mapDays={mapDays}
