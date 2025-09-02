@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { checkAnswerSchedule } from '@/app/answer/[uuid]/action';
 import { generateCandidateIdFromObject } from '@/lib/date/candidateId';
 
-import type { RequestData } from '@/reposirories/requests';
+import type { RequestData } from '@/repositories/requests';
 
 export interface UseAutoInputProps {
   requestData: RequestData;
