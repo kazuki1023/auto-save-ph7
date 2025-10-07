@@ -1,23 +1,16 @@
 // 回答者が回答したあとに遷移して、その後の催促を促すページ
 
 import { Card, CardBody, CardFooter, CardHeader } from '@/components/heroui';
-import { getAnswerById, getAnswersByRequestId } from '@/repositories/answers';
+import { getAnswerRank } from '@/repositories/answers';
 
 import ShareButton from './ShareButton';
 
 const SharePage = async ({ params }: { params: { answer_uuid: string } }) => {
   const { answer_uuid } = params;
 
-  const answer = await getAnswerById(answer_uuid);
-  const questionId = answer?.question_id ?? '';
-  // 全回答取得
-  const allAnswers = questionId ? await getAnswersByRequestId(questionId) : [];
-  // created_at昇順でソート
-  const sortedAnswers = (allAnswers ?? []).sort((a, b) => {
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-  });
-  // 自分の順位（インデックス＋1）
-  const answerRank = sortedAnswers.findIndex(a => a.id === answer_uuid) + 1;
+  // 効率的に順位を取得
+  const rankData = await getAnswerRank(answer_uuid);
+  const answerRank = rankData?.rank ?? 0;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
