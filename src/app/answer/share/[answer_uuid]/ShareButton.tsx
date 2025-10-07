@@ -1,5 +1,6 @@
 'use client';
 
+import { getUrl } from '@/lib/env';
 import { useState } from 'react';
 import { FaShareAlt } from 'react-icons/fa';
 
@@ -11,7 +12,7 @@ interface ShareButtonProps {
 
 const ShareButton = ({ answerUuid }: ShareButtonProps) => {
   // シェアする文言とURL
-  const shareUrl = `${window.location.origin}/answer/${answerUuid}`;
+  const shareUrl = `${getUrl()}/answer/${answerUuid}`;
   const shareText = `日程調整の回答をお願いします！\n${shareUrl}`;
 
   // LINEシェアボタンのクリック処理
