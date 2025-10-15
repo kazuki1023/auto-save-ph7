@@ -2,6 +2,7 @@
 
 import AnswerHeader from '@/components/answer/AnswerHeader';
 import AutoInputModal from '@/components/answer/AutoInputModal';
+import MealAnswerForm from '@/components/answer/MealAnswerForm';
 import NameInputForm from '@/components/answer/NameInputForm';
 import TripAnswerForm from '@/components/answer/TripAnswerForm';
 import { Alert, Button, Card, CardBody } from '@/components/heroui';
@@ -80,8 +81,18 @@ const Answer = ({ requestData, session }: AnswerProps) => {
             onCandidateComment={setCandidateComment}
           />
         )}
+        {requestData.type === 'meal' && requestData.content_json.candidates && (
+          <MealAnswerForm
+            requestData={requestData}
+            candidateAnswers={candidateAnswers}
+            candidateComments={candidateComments}
+            validationErrors={validationErrors}
+            onCandidateAnswer={setCandidateAnswer}
+            onCandidateComment={setCandidateComment}
+          />
+        )}
         {/* その他のタイプの場合 */}
-        {requestData.type !== 'trip' && (
+        {requestData.type !== 'trip' && requestData.type !== 'meal' && (
           <Card>
             <CardBody className="text-center p-8">
               <div className="text-foreground-500">

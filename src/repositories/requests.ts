@@ -6,6 +6,13 @@ interface TripCandidate {
   end: string;
 }
 
+interface MealCandidate {
+  start: string;
+  end: string;
+  mealTime?: 'lunch' | 'dinner';
+  displayText?: string;
+}
+
 export interface RequestData {
   id: string;
   title: string;
@@ -15,8 +22,9 @@ export interface RequestData {
       nights: number;
       days: number;
     };
-    candidates?: TripCandidate[];
+    candidates?: TripCandidate[] | MealCandidate[];
     notes?: string;
+    type?: string;
   };
 }
 
