@@ -7,7 +7,7 @@ import { supabase } from '@/lib/supabase/supabaseClient';
 
 type QuestionsType = Database['public']['Enums']['questions_type'];
 
-interface TripCandidate {
+interface Candidate {
   start: string;
   end: string;
 }
@@ -21,7 +21,7 @@ export interface RequestData {
       nights: number;
       days: number;
     };
-    candidates?: TripCandidate[];
+    candidates?: Candidate[];
     notes?: string;
   };
 }
@@ -50,7 +50,7 @@ export const getRequestByUuid = async (
         nights: number;
         days: number;
       };
-      candidates?: TripCandidate[];
+      candidates?: Candidate[];
       notes?: string;
     } | null;
 
@@ -78,7 +78,7 @@ export const getRequests = async (): Promise<Tables<'requests'>[] | null> => {
 /**
  * リクエストを作成する
  */
-export const create = async (
+export const createRequest = async (
   title: string,
   contentJson: Record<string, unknown>,
   type: QuestionsType

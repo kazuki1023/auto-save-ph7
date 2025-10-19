@@ -13,7 +13,7 @@ import {
   parseLocalDate,
 } from '@/lib/date/formatters';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
-import { create } from '@/repositories/requests';
+import { createRequest } from '@/repositories/requests';
 
 interface DateCandidate {
   id: string;
@@ -198,7 +198,7 @@ const RequestTravelCreatePage = () => {
 
     try {
       // リポジトリメソッドを使用してSupabaseに登録
-      const result = await create(
+      const result = await createRequest(
         `${selectedPlan.nights}泊${selectedPlan.days}日の旅行`,
         {
           plan: {
