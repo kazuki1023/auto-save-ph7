@@ -1,5 +1,11 @@
-import { Tables } from '@/lib/supabase/database.types';
+import {
+  Tables,
+  type Database,
+  type Json,
+} from '@/lib/supabase/database.types';
 import { supabase } from '@/lib/supabase/supabaseClient';
+
+type QuestionsType = Database['public']['Enums']['questions_type'];
 
 interface TripCandidate {
   start: string;
@@ -67,4 +73,36 @@ export const getRequests = async (): Promise<Tables<'requests'>[] | null> => {
   const { data, error } = await supabase.from('requests').select('*');
   if (error) throw error;
   return data;
+};
+
+/**
+ * リクエストを作成する
+ */
+export const create = async (
+  title: string,
+  contentJson: Record<string, unknown>,
+  type: QuestionsType
+): Promise<{ id: string } | null> => {
+  try {
+    const requestData = {
+      title,
+      content_json: contentJson as unknown as Json,
+      type,
+    };
+
+    const { data, error } = await supabase
+      .from('requests')
+      .insert(requestData)
+      .select('id');
+
+    if (error) {
+      console.error('登録エラー:', error);
+      return null;
+    }
+
+    return { id: data[0].id };
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return null;
+  }
 };
