@@ -80,8 +80,8 @@ export const useAutoInput = ({
           // 回答を設定
           newAnswers.set(candidateId, r.response);
 
-          // コメントを設定（conditionalの場合）
-          if (r.response === 'conditional' && r.comment) {
+          // コメントを設定（すべての回答タイプで自動入力）
+          if (r.comment) {
             newComments.set(candidateId, r.comment);
           }
 
