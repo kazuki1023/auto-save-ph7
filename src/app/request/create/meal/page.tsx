@@ -6,13 +6,20 @@ import { useState } from 'react';
 import { Button, Card, CardBody, CardHeader } from '@/components/heroui';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
+type MealTime = 'lunch' | 'dinner';
+
+interface MealTimeOption {
+  id: MealTime;
+  name: string;
+  emoji: string;
+  defaultTime: string;
+}
+
 // 食事の時間帯を定義
-const MEAL_TIMES = [
+const MEAL_TIMES: MealTimeOption[] = [
   { id: 'lunch', name: 'ランチ', emoji: '☀️', defaultTime: '12:00-14:00' },
   { id: 'dinner', name: 'ディナー', emoji: '🌙', defaultTime: '18:00-20:00' },
-] as const;
-
-type MealTime = (typeof MEAL_TIMES)[number]['id'];
+];
 
 // 指定した週数分の日程候補を生成
 const generateDateCandidates = (
@@ -99,34 +106,75 @@ const RequestMealCreatePage = () => {
     }
 
     try {
+      console.log(
+        'Creating plan with candidates:',
+        Array.from(selectedCandidates)
+      );
+
       // 選択された候補をデータベース形式に変換
-      const candidates = Array.from(selectedCandidates).map(candidateKey => {
-        // candidateKeyの最後の'-'で分割して、日付部分と食事時間部分を正しく取得
-        const lastDashIndex = candidateKey.lastIndexOf('-');
-        const dateStr = candidateKey.substring(0, lastDashIndex);
-        const mealTime = candidateKey.substring(lastDashIndex + 1) as MealTime;
+      const candidates = Array.from(selectedCandidates)
+        .map(candidateKey => {
+          console.log('Processing candidateKey:', candidateKey);
 
-        const date = new Date(dateStr);
+          // candidateKeyの最後の'-'で分割して、日付部分と食事時間部分を正しく取得
+          const lastDashIndex = candidateKey.lastIndexOf('-');
+          const dateStr = candidateKey.substring(0, lastDashIndex);
+          const mealTime = candidateKey.substring(
+            lastDashIndex + 1
+          ) as MealTime;
 
-        // 時間の開始と終了を設定
-        const startTime = mealTime === 'lunch' ? '12:00' : '18:00';
-        const endTime = mealTime === 'lunch' ? '14:00' : '20:00';
+          console.log('Parsed:', { dateStr, mealTime, lastDashIndex });
 
-        const startDateTime = new Date(date);
-        const [startHour, startMinute] = startTime.split(':').map(Number);
-        startDateTime.setHours(startHour, startMinute, 0, 0);
+          // mealTimeの妥当性チェック
+          if (!['lunch', 'dinner'].includes(mealTime)) {
+            console.error(
+              'Invalid mealTime detected:',
+              mealTime,
+              'from candidateKey:',
+              candidateKey
+            );
+            return null;
+          }
 
-        const endDateTime = new Date(date);
-        const [endHour, endMinute] = endTime.split(':').map(Number);
-        endDateTime.setHours(endHour, endMinute, 0, 0);
+          const date = new Date(dateStr);
 
-        return {
-          start: startDateTime.toISOString(),
-          end: endDateTime.toISOString(),
-          mealTime,
-          displayText: `${MEAL_TIMES.find(t => t.id === mealTime)?.name}（${MEAL_TIMES.find(t => t.id === mealTime)?.defaultTime}）`,
-        };
-      });
+          // 日付の妥当性チェック
+          if (isNaN(date.getTime())) {
+            console.error(
+              'Invalid date detected:',
+              dateStr,
+              'from candidateKey:',
+              candidateKey
+            );
+            return null;
+          }
+
+          // 時間の開始と終了を設定
+          const startTime = mealTime === 'lunch' ? '12:00' : '18:00';
+          const endTime = mealTime === 'lunch' ? '14:00' : '20:00';
+
+          const startDateTime = new Date(date);
+          const [startHour, startMinute] = startTime.split(':').map(Number);
+          startDateTime.setHours(startHour, startMinute, 0, 0);
+
+          const endDateTime = new Date(date);
+          const [endHour, endMinute] = endTime.split(':').map(Number);
+          endDateTime.setHours(endHour, endMinute, 0, 0);
+
+          const mealTimeData = MEAL_TIMES.find(t => t.id === mealTime);
+          const candidate = {
+            start: startDateTime.toISOString(),
+            end: endDateTime.toISOString(),
+            mealTime,
+            displayText: `${mealTimeData?.name}（${mealTimeData?.defaultTime}）`,
+          };
+
+          console.log('Generated candidate:', candidate);
+          return candidate;
+        })
+        .filter(Boolean); // nullを除外
+
+      console.log('Final candidates array:', candidates);
 
       const requestData = {
         title: 'ご飯の日程調整',
@@ -138,11 +186,25 @@ const RequestMealCreatePage = () => {
         type: 'meal' as const,
       };
 
+      console.log(
+        'Request data to be saved:',
+        JSON.stringify(requestData, null, 2)
+      );
+
+      // 候補が空でないことを確認
+      if (candidates.length === 0) {
+        console.error('No valid candidates to save');
+        alert('有効な日程候補がありません。再度選択してください。');
+        return;
+      }
+
       // Supabaseに登録
       const { data, error } = await supabase
         .from('requests')
         .insert(requestData)
         .select('id');
+
+      console.log('Supabase response:', { data, error });
 
       if (error) {
         console.error('登録エラー:', error);
