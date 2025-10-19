@@ -5,6 +5,9 @@ import {
 } from '@/lib/supabase/database.types';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
+/**
+ * Question type の定義を取得
+ */
 type QuestionsType = Database['public']['Enums']['questions_type'];
 
 interface Candidate {
