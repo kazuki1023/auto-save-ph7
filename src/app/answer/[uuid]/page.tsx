@@ -1,7 +1,7 @@
 // 回答画面
 
 import { auth } from '@/auth';
-import { getRequestByUuid } from '@/reposiroties/requests';
+import { getRequestByUuid } from '@/repositories/requests';
 
 import Answer from './answer';
 
