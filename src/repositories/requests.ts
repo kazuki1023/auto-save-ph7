@@ -26,7 +26,6 @@ export interface RequestData {
     };
     candidates?: Candidate[];
     notes?: string;
-    type?: string;
   };
 }
 

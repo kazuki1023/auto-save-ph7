@@ -94,12 +94,6 @@ const MealAnswerForm = ({
                     {mealTimeEmoji} {mealTimeLabel}（{defaultTime}）
                   </Chip>
                 </div>
-                {/* デバッグ用：候補ID表示 */}
-                {process.env.NODE_ENV === 'development' && (
-                  <div className="text-xs text-gray-400 mt-1">
-                    ID: {candidateId}
-                  </div>
-                )}
                 {currentAnswer && (
                   <div className="mt-2 inline-flex items-center px-2 py-1 bg-white/80 rounded-full text-xs font-medium text-gray-600">
                     回答済み (

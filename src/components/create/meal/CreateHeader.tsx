@@ -13,19 +13,7 @@ const CreateHeader = ({ onBack }: Props) => {
             onClick={onBack}
             className="p-2 hover:bg-default-100 rounded-lg"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
+            ←
           </button>
           <h1 className="text-xl font-bold">日程候補を選択</h1>
         </div>
