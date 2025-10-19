@@ -13,7 +13,7 @@ import {
   parseLocalDate,
 } from '@/lib/date/formatters';
 import Calendar from '@/lib/react-multi-date-picker/Calendar';
-import { supabase } from '@/lib/supabase/supabaseClient';
+import { createRequest } from '@/repositories/requests';
 
 interface DateCandidate {
   id: string;
@@ -191,14 +191,19 @@ const RequestTravelCreatePage = () => {
       return;
     }
 
+    if (!selectedPlan) {
+      alert('プランが選択されていません。');
+      return;
+    }
+
     try {
-      // requestsテーブルに登録するデータを作成
-      const requestData = {
-        title: `${selectedPlan?.nights}泊${selectedPlan?.days}日の旅行`,
-        content_json: {
+      // リポジトリメソッドを使用してSupabaseに登録
+      const result = await createRequest(
+        `${selectedPlan.nights}泊${selectedPlan.days}日の旅行`,
+        {
           plan: {
-            nights: selectedPlan?.nights,
-            days: selectedPlan?.days,
+            nights: selectedPlan.nights,
+            days: selectedPlan.days,
           },
           candidates: dateCandidates.map(candidate => ({
             start: candidate.startDate.toISOString(),
@@ -206,21 +211,15 @@ const RequestTravelCreatePage = () => {
           })),
           notes: '旅行の日程候補を作成しました',
         },
-        type: 'trip' as const,
-      };
+        'trip'
+      );
 
-      // Supabaseに登録（配列ではなく単一のオブジェクトを渡す）
-      const { data, error } = await supabase
-        .from('requests')
-        .insert(requestData)
-        .select('id');
-
-      if (error) {
-        console.error('登録エラー:', error);
+      if (!result) {
         alert('登録に失敗しました。もう一度お試しください。');
         return;
       }
-      await router.push(`/request/shareUrl/${data[0].id}`);
+
+      await router.push(`/request/shareUrl/${result.id}`);
     } catch (err) {
       console.error('予期しないエラー:', err);
       alert('予期しないエラーが発生しました。');
