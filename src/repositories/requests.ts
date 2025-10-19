@@ -83,13 +83,13 @@ export const getRequests = async (): Promise<Tables<'requests'>[] | null> => {
  */
 export const createRequest = async (
   title: string,
-  contentJson: Record<string, unknown>,
+  contentJson: Json,
   type: QuestionsType
 ): Promise<{ id: string } | null> => {
   try {
     const requestData = {
       title,
-      content_json: contentJson as unknown as Json,
+      content_json: contentJson,
       type,
     };
 
