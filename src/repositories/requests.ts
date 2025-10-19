@@ -103,7 +103,12 @@ export const createRequest = async (
       return null;
     }
 
-    return { id: data[0].id };
+    if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+      return { id: data[0].id };
+    } else {
+      console.error('登録結果が空です。');
+      return null;
+    }
   } catch (err) {
     console.error('予期しないエラー:', err);
     return null;
