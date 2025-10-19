@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 import CreateHeader from '@/components/create/meal/CreateHeader';
@@ -138,10 +139,12 @@ const Meal = () => {
     window.location.href = `/request/shareUrl/${result.id}`;
   };
 
+  const router = useRouter();
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-lg mx-auto">
-        <CreateHeader onBack={() => history.back()} />
+        <CreateHeader onBack={() => router.back()} />
 
         {Array.from({ length: visibleWeeks }, (_, weekIndex) => (
           <WeekSection

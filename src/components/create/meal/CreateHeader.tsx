@@ -12,6 +12,7 @@ const CreateHeader = ({ onBack }: Props) => {
           <button
             onClick={onBack}
             className="p-2 hover:bg-default-100 rounded-lg"
+            aria-label="戻る"
           >
             ←
           </button>
