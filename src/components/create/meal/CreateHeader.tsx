@@ -17,9 +17,6 @@ const CreateHeader = ({ onBack }: Props) => {
           </button>
           <h1 className="text-xl font-bold">日程候補を選択</h1>
         </div>
-        <p className="text-foreground-500 text-sm">
-          日付と時間帯を追加してください
-        </p>
       </CardHeader>
     </Card>
   );
