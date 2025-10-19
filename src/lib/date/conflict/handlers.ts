@@ -59,7 +59,7 @@ export function handlePartialConflict(
 
   return {
     response: 'conditional',
-    comment: `⚠️ ${eventCount}件の予定と一部重複しています。調整可能です。\n\n【重複する予定】\n${eventDescriptions}`,
+    comment: `⚠️ ${eventCount}件の予定と一部重複しています。\n\n【重複する予定】\n${eventDescriptions}`,
   };
 }
 
