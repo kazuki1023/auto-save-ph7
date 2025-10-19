@@ -1,10 +1,10 @@
 'use client';
 
-import { getUrl } from '@/lib/env';
 import { useState } from 'react';
 import { FaShareAlt } from 'react-icons/fa';
 
 import Button from '@/components/heroui/Button';
+import { getUrl } from '@/lib/env';
 
 interface ShareButtonProps {
   answerUuid: string;
