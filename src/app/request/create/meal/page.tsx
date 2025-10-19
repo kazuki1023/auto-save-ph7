@@ -14,45 +14,49 @@ const MEAL_TIMES = [
 
 type MealTime = (typeof MEAL_TIMES)[number]['id'];
 
-// 今週と来週の日程候補を生成
-const generateDateCandidates = (): Array<{
+// 指定した週数分の日程候補を生成
+const generateDateCandidates = (
+  weeks: number = 2
+): Array<{
   date: Date;
   dayName: string;
   dayNumber: number;
   month: string;
-  isNextWeek: boolean;
+  weekIndex: number;
+  weekLabel: string;
 }> => {
   const today = new Date();
   const candidates = [];
 
-  // 今週（今日から6日間）
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+  for (let weekIndex = 0; weekIndex < weeks; weekIndex++) {
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+      const dayOffset = weekIndex * 7 + dayIndex;
+      const date = new Date(today);
+      date.setDate(today.getDate() + dayOffset);
 
-    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-    candidates.push({
-      date,
-      dayName: dayNames[date.getDay()],
-      dayNumber: date.getDate(),
-      month: `${date.getMonth() + 1}月`,
-      isNextWeek: false,
-    });
-  }
+      const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
 
-  // 来週（7日間）
-  for (let i = 7; i < 14; i++) {
-    const date = new Date(today);
-    date.setDate(today.getDate() + i);
+      // 週のラベルを生成
+      let weekLabel = '';
+      if (weekIndex === 0) {
+        weekLabel = '今週';
+      } else if (weekIndex === 1) {
+        weekLabel = '来週';
+      } else {
+        const weekStartDate = new Date(today);
+        weekStartDate.setDate(today.getDate() + weekIndex * 7);
+        weekLabel = `${weekStartDate.getMonth() + 1}月${Math.ceil(weekStartDate.getDate() / 7)}週目`;
+      }
 
-    const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
-    candidates.push({
-      date,
-      dayName: dayNames[date.getDay()],
-      dayNumber: date.getDate(),
-      month: `${date.getMonth() + 1}月`,
-      isNextWeek: true,
-    });
+      candidates.push({
+        date,
+        dayName: dayNames[date.getDay()],
+        dayNumber: date.getDate(),
+        month: `${date.getMonth() + 1}月`,
+        weekIndex,
+        weekLabel,
+      });
+    }
   }
 
   return candidates;
@@ -62,9 +66,10 @@ const RequestMealCreatePage = () => {
   const [selectedCandidates, setSelectedCandidates] = useState<Set<string>>(
     new Set()
   );
+  const [visibleWeeks, setVisibleWeeks] = useState(2);
   const router = useRouter();
 
-  const dateOptions = generateDateCandidates();
+  const dateOptions = generateDateCandidates(visibleWeeks);
 
   // 戻るボタンの処理
   const handleBack = () => {
@@ -96,10 +101,11 @@ const RequestMealCreatePage = () => {
     try {
       // 選択された候補をデータベース形式に変換
       const candidates = Array.from(selectedCandidates).map(candidateKey => {
-        const [dateStr, mealTime] = candidateKey.split('-') as [
-          string,
-          MealTime,
-        ];
+        // candidateKeyの最後の'-'で分割して、日付部分と食事時間部分を正しく取得
+        const lastDashIndex = candidateKey.lastIndexOf('-');
+        const dateStr = candidateKey.substring(0, lastDashIndex);
+        const mealTime = candidateKey.substring(lastDashIndex + 1) as MealTime;
+
         const date = new Date(dateStr);
 
         // 時間の開始と終了を設定
@@ -150,18 +156,16 @@ const RequestMealCreatePage = () => {
     }
   };
 
-  const renderWeekSection = (
-    title: string,
-    dates: typeof dateOptions,
-    isNextWeek: boolean
-  ) => {
-    const weekDates = dates.filter(d => d.isNextWeek === isNextWeek);
+  const renderWeekSection = (weekIndex: number, dates: typeof dateOptions) => {
+    const weekDates = dates.filter(d => d.weekIndex === weekIndex);
     if (weekDates.length === 0) return null;
 
+    const weekLabel = weekDates[0]?.weekLabel || `第${weekIndex + 1}週`;
+
     return (
-      <div className="mb-6">
+      <div className="mb-6" key={`week-${weekIndex}`}>
         <h3 className="text-lg font-medium text-foreground-700 mb-3">
-          {title}
+          {weekLabel}
         </h3>
         <div className="space-y-2">
           {weekDates.map(dateOption => {
@@ -254,25 +258,123 @@ const RequestMealCreatePage = () => {
           </CardHeader>
         </Card>
 
-        {renderWeekSection('今週', dateOptions, false)}
-        {renderWeekSection('来週', dateOptions, true)}
+        {/* 週ごとのセクションを表示 */}
+        {Array.from({ length: visibleWeeks }, (_, weekIndex) =>
+          renderWeekSection(weekIndex, dateOptions)
+        )}
 
-        {/* 選択された候補の表示 */}
-        {selectedCandidates.size > 0 && (
+        {/* もっと見るボタン */}
+        <Card className="mb-6">
+          <CardBody className="p-4 text-center">
+            <Button
+              variant="ghost"
+              onClick={() => setVisibleWeeks(prev => prev + 2)}
+              className="w-full"
+            >
+              もっと見る（さらに2週間）
+            </Button>
+          </CardBody>
+        </Card>
+
+        {/* 選択候補がある場合は下部余白を追加（固定バーの分） */}
+        {selectedCandidates.size > 0 && <div className="h-44" />}
+
+        {/* 選択候補がない場合のみ通常の発行ボタンを表示 */}
+        {selectedCandidates.size === 0 && (
           <Card className="mb-6">
-            <CardBody className="p-4">
-              <div className="mb-3">
-                <span className="font-semibold">
+            <CardBody className="p-4 text-center">
+              <p className="text-foreground-500 mb-4">
+                日程と時間帯を選択してください
+              </p>
+              <Button color="default" size="lg" className="w-full" disabled>
+                調整URLを発行
+              </Button>
+            </CardBody>
+          </Card>
+        )}
+      </div>
+
+      {/* 選択された候補の固定表示 */}
+      {selectedCandidates.size > 0 && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-default-200 shadow-lg z-50">
+          <div className="max-w-lg mx-auto">
+            {/* ヘッダー部分 */}
+            <div className="flex items-start justify-between p-4 border-b border-default-100">
+              <div className="flex-1 mr-3">
+                <div className="font-semibold text-lg mb-1">
                   選択された候補（{selectedCandidates.size}件）
-                </span>
+                </div>
+                <div className="text-sm text-foreground-600 flex flex-wrap gap-1">
+                  {Array.from(selectedCandidates)
+                    .sort()
+                    .slice(0, 3) // 最初の3件のみ表示
+                    .map(candidateKey => {
+                      // candidateKeyの最後の'-'で分割して、日付部分と食事時間部分を正しく取得
+                      const lastDashIndex = candidateKey.lastIndexOf('-');
+                      const dateStr = candidateKey.substring(0, lastDashIndex);
+                      const mealTime = candidateKey.substring(
+                        lastDashIndex + 1
+                      ) as MealTime;
+
+                      const date = new Date(dateStr);
+                      const mealTimeData = MEAL_TIMES.find(
+                        t => t.id === mealTime
+                      );
+
+                      if (!mealTimeData) return null;
+
+                      return (
+                        <span
+                          key={candidateKey}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-default-100 rounded-md"
+                        >
+                          <span className="text-xs">{mealTimeData.emoji}</span>
+                          <span className="text-xs">
+                            {date.getMonth() + 1}/{date.getDate()}
+                          </span>
+                        </span>
+                      );
+                    })
+                    .filter(Boolean)}
+                  {selectedCandidates.size > 3 && (
+                    <span className="text-xs text-foreground-500 px-2 py-1">
+                      他{selectedCandidates.size - 3}件
+                    </span>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2">
+              <Button
+                color="primary"
+                size="sm"
+                onClick={handleCreatePlan}
+                disabled={selectedCandidates.size === 0}
+              >
+                調整URLを発行
+              </Button>
+            </div>
+
+            {/* 詳細リストセクション */}
+            <div className="bg-gray-50 border-b border-default-100">
+              <div className="px-4 py-2">
+                <div className="text-xs text-gray-600 font-medium mb-2">
+                  選択中の日程一覧
+                </div>
+              </div>
+            </div>
+
+            {/* スクロール可能な候補詳細リスト */}
+            <div className="max-h-48 overflow-y-auto bg-gray-50">
+              <div className="p-4 space-y-2">
                 {Array.from(selectedCandidates)
+                  .sort() // 日付順にソート
                   .map(candidateKey => {
-                    const [dateStr, mealTime] = candidateKey.split('-') as [
-                      string,
-                      MealTime,
-                    ];
+                    // candidateKeyの最後の'-'で分割して、日付部分と食事時間部分を正しく取得
+                    const lastDashIndex = candidateKey.lastIndexOf('-');
+                    const dateStr = candidateKey.substring(0, lastDashIndex);
+                    const mealTime = candidateKey.substring(
+                      lastDashIndex + 1
+                    ) as MealTime;
+
                     const date = new Date(dateStr);
                     const mealTimeData = MEAL_TIMES.find(
                       t => t.id === mealTime
@@ -280,30 +382,41 @@ const RequestMealCreatePage = () => {
 
                     // mealTimeDataが見つからない場合はスキップ
                     if (!mealTimeData) {
-                      console.error('Invalid mealTime:', mealTime);
+                      console.error(
+                        'Invalid mealTime:',
+                        mealTime,
+                        'from candidateKey:',
+                        candidateKey
+                      );
                       return null;
                     }
 
                     return (
                       <div
                         key={candidateKey}
-                        className="flex items-center justify-between p-2 bg-default-50 rounded-lg"
+                        className="flex items-center justify-between p-3 bg-white rounded-lg border shadow-sm"
                       >
-                        <div className="flex items-center gap-2">
-                          <span>{mealTimeData.emoji}</span>
-                          <span className="font-medium">
-                            {date.getMonth() + 1}月{date.getDate()}日(
-                            {
-                              ['日', '月', '火', '水', '木', '金', '土'][
-                                date.getDay()
-                              ]
-                            }
-                            ) （{mealTimeData.name}）
-                          </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{mealTimeData.emoji}</span>
+                          <div>
+                            <div className="font-medium text-sm">
+                              {date.getMonth() + 1}月{date.getDate()}日 (
+                              {
+                                ['日', '月', '火', '水', '木', '金', '土'][
+                                  date.getDay()
+                                ]
+                              }
+                              )
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {mealTimeData.name}
+                            </div>
+                          </div>
                         </div>
                         <button
                           onClick={() => toggleCandidate(dateStr, mealTime)}
-                          className="p-1 text-red-400 hover:text-red-600"
+                          className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          aria-label="候補を削除"
                         >
                           <svg
                             className="w-4 h-4"
@@ -324,20 +437,10 @@ const RequestMealCreatePage = () => {
                   })
                   .filter(Boolean)}
               </div>
-            </CardBody>
-          </Card>
-        )}
-
-        <Button
-          color="primary"
-          size="lg"
-          className="w-full"
-          onClick={handleCreatePlan}
-          disabled={selectedCandidates.size === 0}
-        >
-          調整URLを発行
-        </Button>
-      </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
