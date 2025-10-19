@@ -255,7 +255,7 @@ export const useAnswerForm = ({
       });
 
       if (result) {
-        router.push('/answer/share');
+        router.push('/answer/share/' + result.id);
       } else {
         console.error('回答の保存に失敗しました');
       }

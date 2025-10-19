@@ -1,16 +1,18 @@
-import { Tables } from '@/lib/supabase/database.types';
+import {
+  Tables,
+  type Database,
+  type Json,
+} from '@/lib/supabase/database.types';
 import { supabase } from '@/lib/supabase/supabaseClient';
 
-interface TripCandidate {
-  start: string;
-  end: string;
-}
+/**
+ * Question type の定義を取得
+ */
+type QuestionsType = Database['public']['Enums']['questions_type'];
 
-interface MealCandidate {
+interface Candidate {
   start: string;
   end: string;
-  mealTime?: 'lunch' | 'dinner';
-  displayText?: string;
 }
 
 export interface RequestData {
@@ -22,7 +24,7 @@ export interface RequestData {
       nights: number;
       days: number;
     };
-    candidates?: TripCandidate[] | MealCandidate[];
+    candidates?: Candidate[];
     notes?: string;
     type?: string;
   };
@@ -52,7 +54,7 @@ export const getRequestByUuid = async (
         nights: number;
         days: number;
       };
-      candidates?: TripCandidate[];
+      candidates?: Candidate[];
       notes?: string;
     } | null;
 
@@ -75,4 +77,41 @@ export const getRequests = async (): Promise<Tables<'requests'>[] | null> => {
   const { data, error } = await supabase.from('requests').select('*');
   if (error) throw error;
   return data;
+};
+
+/**
+ * リクエストを作成する
+ */
+export const createRequest = async (
+  title: string,
+  contentJson: Json,
+  type: QuestionsType
+): Promise<{ id: string } | null> => {
+  try {
+    const requestData = {
+      title,
+      content_json: contentJson,
+      type,
+    };
+
+    const { data, error } = await supabase
+      .from('requests')
+      .insert(requestData)
+      .select('id');
+
+    if (error) {
+      console.error('登録エラー:', error);
+      return null;
+    }
+
+    if (Array.isArray(data) && data.length > 0 && data[0]?.id) {
+      return { id: data[0].id };
+    } else {
+      console.error('登録結果が空です。');
+      return null;
+    }
+  } catch (err) {
+    console.error('予期しないエラー:', err);
+    return null;
+  }
 };
