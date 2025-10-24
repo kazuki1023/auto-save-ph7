@@ -19,16 +19,8 @@ export const generateCandidateIdFromObject = (
   candidate: CandidateObject,
   index?: number
 ): string => {
-  // 旅行の場合：日付ベース
-  if (candidate.start && candidate.end) {
-    const formatDate = (dateStr: string): string => {
-      return new Date(dateStr).toISOString().split('T')[0]; // YYYY-MM-DD形式
-    };
-    return `${formatDate(candidate.start)}_${formatDate(candidate.end)}`;
-  }
+  const start = candidate.start || '';
+  const end = candidate.end || '';
 
-  // 食事や他のタイプの場合：内容ベース + インデックス
-  const contentHash = btoa(JSON.stringify(candidate)).substring(0, 8); // Base64エンコード後8文字
-  const indexSuffix = index !== undefined ? `_${index}` : '';
-  return `${contentHash}${indexSuffix}`;
+  return `${start}_${end}${index !== undefined ? `_${index}` : ''}`;
 };

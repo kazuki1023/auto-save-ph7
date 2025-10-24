@@ -13,6 +13,8 @@ type QuestionsType = Database['public']['Enums']['questions_type'];
 interface Candidate {
   start: string;
   end: string;
+  // ドメイン固有の追加情報は meta や options として任意で保持する
+  meta?: Record<string, string>;
 }
 
 export interface RequestData {

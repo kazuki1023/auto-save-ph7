@@ -113,7 +113,11 @@ const Meal = () => {
       return;
     }
 
-    const dbCandidates = candidates.map(c => ({ start: c.start, end: c.end }));
+    const dbCandidates = candidates.map(c => ({
+      start: c.start,
+      end: c.end,
+      meta: { mealTime: c.mealTime },
+    }));
 
     const requestData = {
       title: 'ご飯の日程調整',

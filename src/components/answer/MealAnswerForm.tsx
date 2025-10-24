@@ -10,8 +10,7 @@ interface MealAnswerFormProps {
       candidates?: Array<{
         start: string;
         end: string;
-        mealTime?: 'lunch' | 'dinner';
-        displayText?: string;
+        meta?: { mealTime?: 'lunch' | 'dinner' };
       }>;
     };
   };
@@ -58,7 +57,7 @@ const MealAnswerForm = ({
         const hasError = validationErrors.has(candidateId);
 
         // 時間帯の表示用データ
-        const mealTime = candidate.mealTime || 'lunch';
+        const mealTime = candidate.meta?.mealTime || 'lunch';
         const mealTimeLabel = mealTime === 'lunch' ? 'ランチ' : 'ディナー';
         const mealTimeEmoji = mealTime === 'lunch' ? '☀️' : '🌙';
         const defaultTime =
