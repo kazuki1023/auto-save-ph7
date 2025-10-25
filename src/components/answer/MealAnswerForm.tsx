@@ -69,10 +69,10 @@ const MealAnswerForm = ({
             id={`candidate-${candidateId}`}
             className={`w-full transition-all duration-200 ${
               currentAnswer
-                ? 'bg-gray-100 border-gray-300 shadow-inner'
+                ? 'bg-gray-200 border-gray-300 shadow-inner'
                 : hasError
                   ? 'border-red-300 bg-red-50'
-                  : 'border-gray-200'
+                  : 'border-gray-300'
             }`}
           >
             <CardBody className="p-4">

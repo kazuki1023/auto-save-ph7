@@ -64,12 +64,6 @@ const Answer = ({ requestData, session }: AnswerProps) => {
 
         {/* 名前入力 */}
         <NameInputForm name={name} onNameChange={setName} />
-        {/* グローバルエラー表示 */}
-        {globalError && (
-          <Alert color="danger" variant="bordered">
-            {globalError}
-          </Alert>
-        )}
         {/* リクエストタイプ別のフォーム */}
         {requestData.type === 'trip' && requestData.content_json.candidates && (
           <TripAnswerForm
@@ -100,6 +94,12 @@ const Answer = ({ requestData, session }: AnswerProps) => {
               </div>
             </CardBody>
           </Card>
+        )}
+        {/* グローバルエラー表示 */}
+        {globalError && (
+          <Alert color="danger" variant="bordered">
+            {globalError}
+          </Alert>
         )}
         {/* 確定ボタン */}
         <Button
