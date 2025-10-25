@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react';
 
 import { SignInButton } from '@/components/auth/signin_button';
 import { SignOutButton } from '@/components/auth/signout_button';
+import { SmBreak } from '@/components/break';
 import { Card, CardBody, CardHeader, Chip, Link } from '@/components/heroui';
 
 interface RequestPattern {
@@ -69,11 +70,19 @@ export default function Home() {
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            日程調整アプリ
-          </h1>
-          <p className="text-xl text-foreground-500">
-            用途に合わせて日程調整のパターンを選択してください
+          <div className="flex items-center justify-center align-top">
+            <h1 className="font-bold text-foreground flex-1 text-2xl">
+              日程調整アプリ E=Love
+            </h1>
+            {/* 認証ボタン */}
+            <div className="text-center">
+              {session ? <SignOutButton /> : <SignInButton />}
+            </div>
+          </div>
+          <p className="text-lg text-foreground-500">
+            用途にあった日程調整のパターンを
+            <SmBreak />
+            選択してください
           </p>
         </div>
 
@@ -132,11 +141,6 @@ export default function Home() {
               </div>
             );
           })}
-        </div>
-
-        {/* 認証ボタン */}
-        <div className="text-center">
-          {session ? <SignOutButton /> : <SignInButton />}
         </div>
       </div>
     </div>
