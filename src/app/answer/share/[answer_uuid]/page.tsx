@@ -17,12 +17,12 @@ const SharePage = async ({ params }: { params: { answer_uuid: string } }) => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="flex flex-col items-center gap-2">
           <h1 className="text-2xl font-bold text-primary text-center">
-            日程調整完了！
+            フォームの回答を受け付けました！
           </h1>
         </CardHeader>
         <CardBody className="flex flex-col items-center gap-4">
           <div className="flex flex-col items-center">
-            <span className="text-base text-gray-700">あなたの回答順位</span>
+            <span className="text-base text-gray-700">あなたの回答順位は</span>
             <span className="text-5xl font-extrabold text-primary mt-2 mb-1">
               {answerRank > 0 ? `${answerRank}位` : '—'}
             </span>

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState } from 'react';
 import { FaShareAlt } from 'react-icons/fa';
 
@@ -33,24 +34,17 @@ const ShareButton = ({ answerUuid }: ShareButtonProps) => {
     <div className="flex flex-col items-center gap-3 w-full mt-2">
       <button
         type="button"
-        className="w-full h-12 text-base font-bold flex items-center justify-center gap-2 rounded-lg bg-[#00c300] text-white shadow-md hover:bg-[#00b200] transition-colors duration-150"
+        className="w-full h-12 text-base font-bold flex items-center justify-center gap-2 rounded-lg bg-[#08C855] text-white shadow-md hover:bg-[#00b200] transition-colors duration-150"
         aria-label="LINEで送る"
         onClick={handleLineShare}
         style={{ letterSpacing: '0.05em' }}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-        >
-          <rect width="24" height="24" rx="6" fill="#00c300" />
-          <path
-            d="M12 6C8.13 6 5 8.69 5 12.07c0 2.13 1.38 3.99 3.47 4.97.16.07.34.13.52.16.62.13 1.13.23 1.63.31.52.09 1.01.16 1.56.16.55 0 1.04-.07 1.56-.16.5-.08 1.01-.18 1.63-.31.18-.03.36-.09.52-.16C17.62 16.06 19 14.2 19 12.07 19 8.69 15.87 6 12 6zm-2.47 7.13h-.97v-2.26h.97v2.26zm2.47 0h-.97v-2.26h.97v2.26zm2.47 0h-.97v-2.26h.97v2.26z"
-            fill="white"
-          />
-        </svg>
+        <Image
+          src="/images/LINE_Brand_icon.png"
+          alt="LINE"
+          width={20}
+          height={20}
+        />
         LINEで送る
       </button>
       <Button
