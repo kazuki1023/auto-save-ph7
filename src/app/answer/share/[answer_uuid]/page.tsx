@@ -1,9 +1,21 @@
 // 回答者が回答したあとに遷移して、その後の催促を促すページ
 
 import { Card, CardBody, CardFooter, CardHeader } from '@/components/heroui';
+import { generateAnswerShareMetadata } from '@/lib/metadata/createAnswerShare';
 import { getAnswerRank } from '@/repositories/answers';
 
 import ShareButton from './ShareButton';
+
+import type { Metadata } from 'next';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { answer_uuid: string };
+}): Promise<Metadata> {
+  const { answer_uuid } = params;
+  return generateAnswerShareMetadata(answer_uuid);
+}
 
 const SharePage = async ({ params }: { params: { answer_uuid: string } }) => {
   const { answer_uuid } = params;
@@ -17,7 +29,7 @@ const SharePage = async ({ params }: { params: { answer_uuid: string } }) => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="flex flex-col items-center gap-2">
           <h1 className="text-2xl font-bold text-primary text-center">
-            フォームの回答を受け付けました！
+            回答を受け付けました！
           </h1>
         </CardHeader>
         <CardBody className="flex flex-col items-center gap-4">

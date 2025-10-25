@@ -14,7 +14,7 @@ interface ShareButtonProps {
 const ShareButton = ({ answerUuid }: ShareButtonProps) => {
   // シェアする文言とURL
   const shareUrl = `${getUrl()}/answer/${answerUuid}`;
-  const shareText = `日程調整の回答をお願いします！\n${shareUrl}`;
+  const shareText = `日程調整の回答をお願いします！`;
 
   // LINEシェアボタンのクリック処理
   const handleLineShare = () => {
