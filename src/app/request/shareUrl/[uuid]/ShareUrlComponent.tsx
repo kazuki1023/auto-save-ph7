@@ -21,13 +21,15 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
   const [copySuccess, setCopySuccess] = useState<{
     answer: boolean;
     result: boolean;
-  }>({ answer: false, result: false });
+    all: boolean; // 新しい状態を追加
+  }>({ answer: false, result: false, all: false });
   const router = useRouter();
 
   // 共有URLを生成
   const answerUrl = `${getUrl()}/answer/${uuid}`;
   const resultUrl = `${getUrl()}/result/${uuid}`;
 
+  // 既存の単一URLコピーハンドラー
   const handleCopyUrl = async (type: 'answer' | 'result') => {
     try {
       const url = type === 'answer' ? answerUrl : resultUrl;
@@ -38,6 +40,28 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
       }, 2000); // 2秒後にメッセージを非表示
     } catch (err) {
       console.error('URLのコピーに失敗しました:', err);
+    }
+  };
+
+  // 👇 新しいハンドラー: 全てのURLを4段のテキストでコピー
+  const handleCopyAllUrls = async () => {
+    try {
+      // 4段のテキストを生成
+      const allUrls = [
+        '回答者用URL',
+        answerUrl,
+        '結果確認用URL',
+        resultUrl,
+      ].join('\n'); // 各要素を改行文字で結合
+
+      await navigator.clipboard.writeText(allUrls);
+
+      setCopySuccess(prev => ({ ...prev, all: true }));
+      setTimeout(() => {
+        setCopySuccess(prev => ({ ...prev, all: false }));
+      }, 3000); // 成功メッセージを3秒表示
+    } catch (err) {
+      console.error('全URLのコピーに失敗しました:', err);
     }
   };
 
@@ -65,7 +89,45 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
         </CardHeader>
 
         <CardBody className="space-y-6">
-          {/* 回答者用URL */}
+          {/* 👇 【追加部分 1/3】 全体コピー成功メッセージを最初に配置 */}
+          {copySuccess.all && (
+            <div className="bg-green-100 border border-green-400 rounded-lg p-3">
+              <p className="text-green-900 text-sm font-bold">
+                🎉
+                回答者用と結果確認用URLを4段形式でクリップボードにコピーしました！
+              </p>
+            </div>
+          )}
+
+          {/* 👇 【追加部分 2/3】 全てコピーするボタンを次に配置 */}
+          <Button
+            color="success"
+            variant="solid"
+            className="w-full text-lg font-semibold"
+            onPress={handleCopyAllUrls} // 新しいハンドラーを適用
+            startContent={
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-2M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v2"
+                />
+              </svg>
+            }
+          >
+            コピーして回答者に共有！
+          </Button>
+
+          {/* 👇 【追加部分 3/3】 セクション区切り */}
+          <hr className="my-6 border-t border-gray-200" />
+
+          {/* 回答者用URL (既存のレイアウト) */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-gray-700">
               回答者用URL
@@ -90,7 +152,7 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
             )}
           </div>
 
-          {/* 結果確認用URL */}
+          {/* 結果確認用URL (既存のレイアウト) */}
           <div className="space-y-3">
             <label className="block text-sm font-medium text-gray-700">
               結果確認用URL
@@ -115,7 +177,7 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
             )}
           </div>
 
-          {/* 使用方法 */}
+          {/* 使用方法 (既存のレイアウト) */}
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="text-sm font-medium text-blue-900 mb-2">使用方法</h3>
             <ul className="text-sm text-blue-800 space-y-1">
@@ -132,6 +194,7 @@ const ShareUrl = ({ uuid }: ShareUrlProps) => {
         </CardBody>
 
         <CardFooter className="flex flex-col sm:flex-row gap-3 pt-6 justify-center">
+          {/* ... CardFooter のボタン群は省略なし ... */}
           <Button
             color="default"
             variant="bordered"
